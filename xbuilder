@@ -721,7 +721,7 @@ package_info_perl() {
     PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.38/perl-5.38.2.tar.xz'
     PACKAGE_SRC_SHA='d91115e90b896520e83d4de6b52f8254ef2b70a8d545ffab33200ea9f1cf29e8'
     PACKAGE_VERSION='5.38.2'
-    PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Dccflags="\"$CFLAGS\"" -Dldflags="\"$LDFLAGS\"" -Dcppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
+    PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Accflags="\"$CFLAGS\"" -Aldflags="\"$LDFLAGS\"" -Acppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
 }
 
 package_info_gsed() {
@@ -844,8 +844,8 @@ EOF
 
         ######################################################
 
-        install_the_given_package gsed
-        install_the_given_package perl
+        (install_the_given_package gsed)
+         install_the_given_package perl 
 
         ######################################################
 
