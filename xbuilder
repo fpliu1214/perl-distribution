@@ -721,7 +721,12 @@ package_info_perl() {
     PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.38/perl-5.38.2.tar.xz'
     PACKAGE_SRC_SHA='d91115e90b896520e83d4de6b52f8254ef2b70a8d545ffab33200ea9f1cf29e8'
     PACKAGE_VERSION='5.38.2'
-    PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Accflags="\"$CFLAGS\"" -Aldflags="\"$LDFLAGS\"" -Acppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
+
+    if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
+        PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Dccflags="\"$CFLAGS\"" -Dldflags="\"$LDFLAGS\"" -Dcppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
+    else
+        PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Accflags="\"$CFLAGS\"" -Aldflags="\"$LDFLAGS\"" -Acppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
+    fi
 }
 
 package_info_gsed() {
@@ -844,6 +849,14 @@ EOF
 
         ######################################################
 
+        run install -d "$AUX_INSTALL_DIR/bin"
+        run cd         "$AUX_INSTALL_DIR/bin"
+
+        wfetch 'https://raw.githubusercontent.com/vim/vim/master/src/xxd/xxd.c'
+        run "$CC" -DUNIX -Os -flto -o xxd xxd.c
+
+        ######################################################
+
         (install_the_given_package gsed)
          install_the_given_package perl 
 
@@ -853,9 +866,9 @@ EOF
 
         for f in *
         do
-            X="$(head -c2 "$f")"
+            X="$(xxd -u -p -l 2 "$f")"
 
-            if [ "$X" = '#!' ] ; then
+            if [ "$X" = 2321 ] ; then
                 Y="$(gsed -n 1p "$f")"
 
                 if [ "$Y" = "#!$PACKAGE_INSTALL_DIR/bin/perl" ] ; then
