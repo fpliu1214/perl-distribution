@@ -1,7 +1,0 @@
-src-url: https://cpan.metacpan.org/authors/id/P/PE/PEVANS/perl-5.38.2.tar.xz
-src-uri: https://distfiles.macports.org/perl5.38/perl-5.38.2.tar.xz
-src-sha: d91115e90b896520e83d4de6b52f8254ef2b70a8d545ffab33200ea9f1cf29e8
-dep-pkg: 
-install: run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Accflags="\"$CFLAGS\"" -Aldflags="\"$LDFLAGS\"" -Acppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install
-builtat: 1729544746
-builtby: xbuilder-1.0.0
