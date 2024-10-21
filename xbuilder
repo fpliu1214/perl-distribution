@@ -559,6 +559,8 @@ inspect_install_arguments() {
 
     # https://keith.github.io/xcode-man-pages/xcrun.1.html
     unset SDKROOT
+
+    unset PERL5LIB
 }
 
 configure() {
@@ -844,7 +846,7 @@ EOF
             fi
         done
 
-        sed -i.bak '3a =pod' pod2html
+        sed -i.bak '3a\=pod' pod2html
 
         rm -f *.bak
 
