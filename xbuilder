@@ -853,7 +853,7 @@ EOF
         run cd         "$AUX_INSTALL_DIR/bin"
 
         wfetch 'https://raw.githubusercontent.com/vim/vim/master/src/xxd/xxd.c'
-        run "$CC" -DUNIX -Os -flto -o xxd xxd.c
+        run "$CC" "$CFLAGS" "$CPPFLAGS" -DUNIX "$LDFLAGS" -o xxd xxd.c
 
         ######################################################
 
