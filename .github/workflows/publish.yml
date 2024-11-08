@@ -30,7 +30,7 @@ jobs:
 
           LATEST_RELEASE_VERSION="$(gh api graphql -f "query=$(cat QUERY)" --jq .data.repository.latestRelease.name)"
 
-          RELEASE_VERSION="$(./xbuilder perl-version)"
+          RELEASE_VERSION="$(./build.sh perl-version)"
 
           if [ "$LATEST_RELEASE_VERSION" = "$RELEASE_VERSION" ] ; then
               RELEASE=no

@@ -100,6 +100,8 @@ run $sudo install -d -g `id -g -n` -o `id -u -n` "$PREFIX"
 
 [ -f cacert.pem ] && run export SSL_CERT_FILE="$PWD/cacert.pem"
 
-run ./xbuilder install --prefix="$PREFIX"
+run ./build.sh install --prefix="$PREFIX"
+
+run cp build.sh "$PREFIX/"
 
 run bsdtar cvaPf "$PREFIX.tar.xz" "$PREFIX"
