@@ -869,6 +869,9 @@ EOF
 
         cd bin
 
+        # change hard-link to soft-link
+        ln -sf perl5.* perl
+
         for f in *
         do
             X="$(xxd -u -p -l 2 "$f")"
