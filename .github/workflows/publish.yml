@@ -208,45 +208,63 @@ jobs:
           path: perl-${{ needs.check.outputs.release-version }}-macos-${{ matrix.target-version }}-x86_64.tar.xz
 
 
-  linux:
+  linux-x86_64:
     needs: check
     if: needs.check.outputs.if-new-release == 'yes'
-
-    strategy:
-      fail-fast: false
-      matrix:
-        target-arch: [x86_64, aarch64, ppc64le, riscv64, s390x]
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
+      - run: ./pack.sh ${{ needs.check.outputs.release-version }} linux-any-x86_64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: perl-${{ needs.check.outputs.release-version }}-linux-any-x86_64.tar.xz
+          path: perl-${{ needs.check.outputs.release-version }}-linux-any-x86_64.tar.xz
+
+
+  linux-other:
+    needs: check
+    if: needs.check.outputs.if-new-release == 'yes'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-arch: [aarch64, ppc64le, riscv64, s390x]
+
       - run: |
-          cat > run.sh <<EOF
-          ./pack.sh ${{ needs.check.outputs.release-version }} linux-any-${{ matrix.target-arch }}
-          EOF
+          case ${{ matrix.target-arch }} in
+            x86_64)  X=amd64 ;;
+            aarch64) X=arm64 ;;
+            ppc64le) X=ppc64el ;;
+            *)       X=${{ matrix.target-arch }}
+          esac
+          curl -LO https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.1-base-$X.tar.gz
 
-          chmod +x run.sh
+      - run: install -d ubuntu-rootfs
+      - run: tar xf ubuntu-base-24.04.1-base-*.tar.gz -C ubuntu-rootfs
 
-      # https://github.com/multiarch/qemu-user-static
-      - if: matrix.target-arch != 'x86_64'
-        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - run: cp -p /etc/resolv.conf ubuntu-rootfs/etc/
 
-      - if: matrix.target-arch == 'x86_64'
-        run: docker run -v $PWD:/root -w /root --name ubuntu         ubuntu:24.04 sh run.sh
+      - run: sudo mount -o bind  /dev ubuntu-rootfs/dev
+      - run: sudo mount -t proc  none ubuntu-rootfs/proc
+      - run: sudo mount -t sysfs none ubuntu-rootfs/sys
+      - run: sudo mount -t tmpfs none ubuntu-rootfs/tmp
 
-      - if: matrix.target-arch == 'aarch64'
-        run: docker run -v $PWD:/root -w /root --name ubuntu arm64v8/ubuntu:24.04 sh run.sh
+      - run: sudo apt-get -y update
+      - run: sudo apt-get -y install qemu-user-static binfmt-support
 
-      - if: matrix.target-arch == 'ppc64le'
-        run: docker run -v $PWD:/root -w /root --name ubuntu ppc64le/ubuntu:24.04 sh run.sh
+      - run: update-binfmts --enable
 
-      - if: matrix.target-arch == 'riscv64'
-        run: docker run -v $PWD:/root -w /root --name ubuntu riscv64/ubuntu:24.04 sh run.sh
+      - run: sudo install -g `id -g` -o `id -u` /usr/bin/qemu-${{ matrix.target-arch }}-static ubuntu-rootfs/
 
-      - if: matrix.target-arch == 's390x'
-        run: docker run -v $PWD:/root -w /root --name ubuntu   s390x/ubuntu:24.04 sh run.sh
+      - run: sudo chroot ubuntu-rootfs /qemu-${{ matrix.target-arch }}-static /bin/sh pack.sh ${{ needs.check.outputs.release-version }} linux-any-${{ matrix.target-arch }}
+
+      - run: mv ubuntu-rootfs/perl-${{ needs.check.outputs.release-version }}-linux-any-${{ matrix.target-arch }}.tar.xz .
 
       - uses: actions/upload-artifact@v4
         with:
@@ -255,7 +273,7 @@ jobs:
 
 
   publish:
-    needs: [check, dragonflybsd, freebsd, openbsd, netbsd, macos-arm64, macos-x86_64, linux]
+    needs: [check, dragonflybsd, freebsd, openbsd, netbsd, macos-arm64, macos-x86_64, linux-x86_64, linux-other]
     if: needs.check.outputs.if-new-release == 'yes'
 
     runs-on: ubuntu-latest
