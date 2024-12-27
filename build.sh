@@ -719,7 +719,6 @@ package_info_perl() {
     PACKAGE_SRC_URL='https://cpan.metacpan.org/authors/id/P/PE/PEVANS/perl-5.38.2.tar.xz'
     PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.38/perl-5.38.2.tar.xz'
     PACKAGE_SRC_SHA='d91115e90b896520e83d4de6b52f8254ef2b70a8d545ffab33200ea9f1cf29e8'
-    PACKAGE_VERSION='5.38.2'
 
     if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
         PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Dccflags="\"$CFLAGS\"" -Dldflags="\"$LDFLAGS\"" -Dcppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
@@ -815,10 +814,14 @@ case $1 in
         help
         ;;
     perl-version)
-        unset PACKAGE_VERSION
+        unset PACKAGE_SRC_URL
 
         package_info_perl
-        
+
+        PACKAGE_SRC_FILENAME="${PACKAGE_SRC_URI##*/}"
+        PACKAGE_SRC_FILENAME_PREFIX="${PACKAGE_SRC_FILENAME%.tar.*}"
+        PACKAGE_VERSION="${PACKAGE_SRC_FILENAME_PREFIX##*-}"
+
         printf '%s\n' "$PACKAGE_VERSION"
         ;;
     perl-info)
