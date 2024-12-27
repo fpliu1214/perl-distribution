@@ -109,6 +109,8 @@ if [ "$TARGET_OS_KIND" = linux ] ; then
 
     run cd "$PREFIX/bin/"
 
+    run install -d ../runtime/
+
     run mv "perl$1" "perl$1.exe"
 
     run chmod -x "perl$1.exe"
