@@ -75,7 +75,7 @@ __setup_linux() {
     case $ID in
         ubuntu)
             run $sudo apt-get -y update
-            run $sudo apt-get -y install curl libarchive-tools make g++
+            run $sudo apt-get -y install curl libarchive-tools make g++ patchelf
             run $sudo ln -sf /usr/bin/make /usr/bin/gmake
             ;;
         alpine)
@@ -102,6 +102,33 @@ run $sudo install -d -g `id -g -n` -o `id -u -n` "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run cp build.sh "$PREFIX/"
+run cp build.sh pack.sh "$PREFIX/"
+
+if [ "$TARGET_OS_KIND" = linux ] ; then
+    run mv perl.c "$PREFIX/bin/"
+
+    run cd "$PREFIX/bin/"
+
+    run mv "perl$1" "perl$1.exe"
+
+    run chmod -x "perl$1.exe"
+
+    DYNAMIC_LOADER_PATH="$(patchelf --print-interpreter "perl$1.exe")"
+    DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
+
+    sed -i "s|ld-linux-x86-64.so.2|$DYNAMIC_LOADER_NAME|" perl.c
+
+    run gcc -static -std=gnu99 -Os -flto -s -o "perl$1" perl.c
+
+    NEEDEDs="$(patchelf --print-needed "perl$1.exe")"
+
+    for NEEDED_FILENAME in $NEEDEDs
+    do
+        NEEDED_FILEPATH="$(gcc -print-file-name="$NEEDED_FILENAME")"
+        run cp -L "$NEEDED_FILEPATH" ../runtime/
+    done
+
+    run cd -
+fi
 
 run bsdtar cvaPf "$PREFIX.tar.xz" "$PREFIX"
