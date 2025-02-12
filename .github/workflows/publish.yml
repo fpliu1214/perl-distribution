@@ -27,7 +27,7 @@ jobs:
       release-version: ${{ steps.check-if-build.outputs.RELEASE_VERSION }}
 
 
-  linux-loongarch64:
+  linux-armv7l:
     needs: check
 
     runs-on: ubuntu-latest
@@ -37,17 +37,17 @@ jobs:
 
       - run: curl -LO https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/master/alpine-chroot-install
       - run: chmod +x alpine-chroot-install
-      - run: sudo ./alpine-chroot-install -d /alpine -a loongarch64
-      - run: /alpine/enter-chroot /bin/sh pack.sh ${{ needs.check.outputs.release-version }} linux-any-loongarch64
+      - run: sudo ./alpine-chroot-install -d /alpine -a armvhf
+      - run: /alpine/enter-chroot /bin/sh pack.sh ${{ needs.check.outputs.release-version }} linux-any-armv7l
 
       - uses: actions/upload-artifact@v4
         with:
-          name: perl-${{ needs.check.outputs.release-version }}-linux-any-loongarch64.tar.xz
-          path: perl-${{ needs.check.outputs.release-version }}-linux-any-loongarch64.tar.xz
+          name: perl-${{ needs.check.outputs.release-version }}-linux-any-armv7l.tar.xz
+          path: perl-${{ needs.check.outputs.release-version }}-linux-any-armv7l.tar.xz
 
 
   publish:
-    needs: [check, linux-loongarch64]
+    needs: [check, linux-armv7l]
 
     runs-on: ubuntu-latest
 
