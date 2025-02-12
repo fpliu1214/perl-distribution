@@ -37,7 +37,7 @@ jobs:
 
       - run: curl -LO https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/master/alpine-chroot-install
       - run: chmod +x alpine-chroot-install
-      - run: sudo ./alpine-chroot-install -d /alpine -a armvhf
+      - run: sudo ./alpine-chroot-install -d /alpine -a armhf
       - run: /alpine/enter-chroot /bin/sh pack.sh ${{ needs.check.outputs.release-version }} linux-any-armv7l
 
       - uses: actions/upload-artifact@v4
