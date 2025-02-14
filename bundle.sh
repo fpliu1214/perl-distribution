@@ -164,10 +164,12 @@ if [ "$TARGET_OS_KIND" = linux ] ; then
         run cp -L "$NEEDED_FILEPATH" .
     done
 
-    case $DYNAMIC_LOADER_NAME in
-        ld-musl-*.so.1)
-            run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
-    esac
+    [ -f    "$DYNAMIC_LOADER_NAME" ] || {
+        case $DYNAMIC_LOADER_NAME in
+            ld-musl-*.so.1)
+                run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
+        esac
+    }
 fi
 
 run cd "$ORIGIN_DIR"
