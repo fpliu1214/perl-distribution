@@ -118,19 +118,7 @@ run cp build.sh bundle.sh "$PREFIX/"
 
 ORIGIN_DIR="$PWD"
 
-run cd "$PREFIX"
-
-run install -d include/ lib/
-
-LIBCRYPT="$(gcc -print-file-name=libcrypt.a)"
-
-case $LIBCRYPT in
-    /*) cp -L "$LIBCRYPT" "$PACKAGE_INSTALL_DIR/lib/"
-esac
-
-######################################################
-
-cd bin
+run cd "$PREFIX/bin"
 
 # change hard-link to soft-link
 ln -sf perl5.* perl
