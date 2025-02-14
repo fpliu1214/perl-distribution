@@ -118,7 +118,7 @@ run cp build.sh bundle.sh "$PREFIX/"
 
 ORIGIN_DIR="$PWD"
 
-run cd "$PREFIX/bin/"
+run cd "$PREFIX"
 
 run install -d include/ lib/
 
