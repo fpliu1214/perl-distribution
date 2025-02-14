@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2024-2024 刘富频
+# Copyright (c) 2024-2025 刘富频
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
 # limitations under the License.
 
 
+ARG0="$0"
+
 set -e
 
 # If IFS is not set, the default value will be <space><tab><newline>
 # https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_05_03
 unset IFS
-
 
 COLOR_RED='\033[0;31m'          # Red
 COLOR_GREEN='\033[0;32m'        # Green
@@ -570,23 +571,6 @@ inspect_install_arguments() {
 }
 
 configure() {
-    for FILENAME in config.sub config.guess
-    do
-        FILEPATH="$SESSION_DIR/$FILENAME"
-
-        [ -f "$FILEPATH" ] || {
-            wfetch "https://git.savannah.gnu.org/cgit/config.git/plain/$FILENAME" -o "$FILEPATH"
-
-            run chmod a+x "$FILEPATH"
-
-            if [ "$FILENAME" = 'config.sub' ] ; then
-                sed -i.bak 's/arm64-*/arm64-*|arm64e-*/g' "$FILEPATH"
-            fi
-        }
-
-        find . -name "$FILENAME" -exec cp -vf "$FILEPATH" {} \;
-    done
-
     run ./configure "--prefix=$PACKAGE_INSTALL_DIR" "$@"
     run "$GMAKE" "--jobs=$BUILD_NJOBS"
     run "$GMAKE" install
@@ -716,9 +700,9 @@ EOF
 }
 
 package_info_perl() {
-    PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.40.0.tar.xz'
-    PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.40/perl-5.40.0.tar.xz'
-    PACKAGE_SRC_SHA='d5325300ad267624cb0b7d512cfdfcd74fa7fe00c455c5b51a6bd53e5e199ef9'
+    PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.40.1.tar.xz'
+    PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.40/perl-5.40.1.tar.xz'
+    PACKAGE_SRC_SHA='dfa20c2eef2b4af133525610bbb65dd13777ecf998c9c5b1ccf0d308e732ee3f'
 
     if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
         PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Dccflags="\"$CFLAGS\"" -Dldflags="\"$LDFLAGS\"" -Dcppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Ud_procselfexe && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
@@ -726,14 +710,6 @@ package_info_perl() {
         PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Accflags="\"$CFLAGS\"" -Aldflags="\"$LDFLAGS\"" -Acppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Ud_procselfexe && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
     fi
 }
-
-package_info_gsed() {
-    PACKAGE_SRC_URL='https://ftp.gnu.org/gnu/sed/sed-4.9.tar.xz'
-    PACKAGE_SRC_SHA='6e226b732e1cd739464ad6862bd1a1aba42d7982922da7a53519631d24975181'
-    PACKAGE_INSTALL='configure --program-prefix=g --with-included-regex --without-selinux --disable-acl --disable-assert'
-}
-
-ARG0="$0"
 
 help() {
     printf '%b\n' "\
@@ -845,53 +821,7 @@ EOF
 
         inspect_install_arguments "$@"
 
-        ######################################################
-
-        run install -d "$PACKAGE_INSTALL_DIR/lib"
-
-        LIBCRYPT="$("$CC" -print-file-name=libcrypt.a)"
-
-        case $LIBCRYPT in
-            /*) cp -L "$LIBCRYPT" "$PACKAGE_INSTALL_DIR/lib/"
-        esac
-
-        ######################################################
-
-        run install -d "$AUX_INSTALL_DIR/bin"
-        run cd         "$AUX_INSTALL_DIR/bin"
-
-        wfetch 'https://raw.githubusercontent.com/vim/vim/master/src/xxd/xxd.c'
-        run "$CC" "$CFLAGS" "$CPPFLAGS" -DUNIX "$LDFLAGS" -o xxd xxd.c
-
-        ######################################################
-
-        (install_the_given_package gsed)
-         install_the_given_package perl 
-
-        ######################################################
-
-        cd bin
-
-        # change hard-link to soft-link
-        ln -sf perl5.* perl
-
-        for f in *
-        do
-            X="$(xxd -u -p -l 2 "$f")"
-
-            if [ "$X" = 2321 ] ; then
-                Y="$(gsed -n 1p "$f")"
-
-                if [ "$Y" = "#!$PACKAGE_INSTALL_DIR/bin/perl" ] ; then
-                    gsed -i 1,4d "$f"
-                    gsed -i '1s|^|#!/bin/sh\nexec "$(dirname "$0")"/perl -x "$0" "$@"\n#!perl\n|' "$f"
-                fi
-            fi
-        done
-
-        gsed -i '3a =pod' pod2html
-
-        ######################################################
+        install_the_given_package perl
 
         if [ "$REQUEST_TO_KEEP_SESSION_DIR" != 1 ] ; then
             rm -rf "$SESSION_DIR"

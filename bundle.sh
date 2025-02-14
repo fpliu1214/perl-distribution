@@ -20,9 +20,10 @@ __setup_freebsd
 }
 
 __setup_freebsd() {
-    run $sudo pkg install -y curl libnghttp2 coreutils gmake gcc
+    run $sudo pkg install -y curl libnghttp2 coreutils gsed gmake gcc
 
     run $sudo ln -sf /usr/local/bin/gln        /usr/bin/ln
+    run $sudo ln -sf /usr/local/bin/gsed       /usr/bin/sed
     run $sudo ln -sf /usr/local/bin/gmake      /usr/bin/make
     run $sudo ln -sf /usr/local/bin/gstat      /usr/bin/stat
     run $sudo ln -sf /usr/local/bin/gdate      /usr/bin/date
@@ -35,9 +36,10 @@ __setup_freebsd() {
 }
 
 __setup_openbsd() {
-    run $sudo pkg_add coreutils gmake gcc%11 libarchive
+    run $sudo pkg_add coreutils gsed gmake gcc%11 libarchive
 
     run $sudo ln -sf /usr/local/bin/gln        /usr/bin/ln
+    run $sudo ln -sf /usr/local/bin/gsed       /usr/bin/sed
     run $sudo ln -sf /usr/local/bin/gmake      /usr/bin/make
     run $sudo ln -sf /usr/local/bin/gstat      /usr/bin/stat
     run $sudo ln -sf /usr/local/bin/gdate      /usr/bin/date
@@ -51,9 +53,10 @@ __setup_openbsd() {
 
 __setup_netbsd() {
     run $sudo pkgin -y update
-    run $sudo pkgin -y install coreutils gmake bsdtar
+    run $sudo pkgin -y install coreutils gsed gmake bsdtar
 
     run $sudo ln -sf /usr/pkg/bin/gln        /usr/bin/ln
+    run $sudo ln -sf /usr/pkg/bin/gsed       /usr/bin/sed
     run $sudo ln -sf /usr/pkg/bin/gmake      /usr/bin/make
     run $sudo ln -sf /usr/pkg/bin/gstat      /usr/bin/stat
     run $sudo ln -sf /usr/pkg/bin/gdate      /usr/bin/date
@@ -66,7 +69,7 @@ __setup_netbsd() {
 }
 
 __setup_macos() {
-    run brew install coreutils make
+    run brew install coreutils gnu-sed make
 }
 
 __setup_linux() {
@@ -77,10 +80,11 @@ __setup_linux() {
             run $sudo apt-get -y update
             run $sudo apt-get -y install curl libarchive-tools make g++ patchelf
             run $sudo ln -sf /usr/bin/make /usr/bin/gmake
+            run $sudo ln -sf /usr/bin/sed  /usr/bin/gsed
             ;;
         alpine)
             run $sudo apk update
-            run $sudo apk add libarchive-tools make g++ patchelf
+            run $sudo apk add libarchive-tools make g++ libc-dev linux-headers patchelf
     esac
 }
 
@@ -102,7 +106,44 @@ run $sudo install -d -g `id -g -n` -o `id -u -n` "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run cp build.sh pack.sh "$PREFIX/"
+run cp build.sh bundle.sh "$PREFIX/"
+
+######################################################
+
+run cd "$PREFIX/bin/"
+
+run install -d include/ lib/
+
+LIBCRYPT="$("$CC" -print-file-name=libcrypt.a)"
+
+case $LIBCRYPT in
+    /*) cp -L "$LIBCRYPT" "$PACKAGE_INSTALL_DIR/lib/"
+esac
+
+######################################################
+
+cd bin
+
+# change hard-link to soft-link
+ln -sf perl5.* perl
+
+for f in *
+do
+    X="$(head -c2 "$f")"
+
+    if [ "$X" = '#!' ] ; then
+        Y="$(head -n 1 "$f")"
+
+        if [ "$Y" = "#!$PACKAGE_INSTALL_DIR/bin/perl" ] ; then
+            gsed -i '1,4d' "$f"
+            gsed -i '1s|^|#!/bin/sh\nexec "$(dirname "$0")"/perl -x "$0" "$@"\n#!perl\n|' "$f"
+        fi
+    fi
+done
+
+gsed -i '3a =pod' pod2html
+
+######################################################
 
 if [ "$TARGET_OS_KIND" = linux ] ; then
     run mv perl.c "$PREFIX/bin/"
@@ -118,7 +159,7 @@ if [ "$TARGET_OS_KIND" = linux ] ; then
     DYNAMIC_LOADER_PATH="$(patchelf --print-interpreter "perl$1.exe")"
     DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
 
-    sed -i "s|ld-linux-x86-64.so.2|$DYNAMIC_LOADER_NAME|" perl.c
+    gsed -i "s|ld-linux-x86-64.so.2|$DYNAMIC_LOADER_NAME|" perl.c
 
     run gcc -static -std=gnu99 -Os -flto -s -o "perl$1" perl.c
 
