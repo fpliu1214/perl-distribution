@@ -27,6 +27,7 @@ __setup_freebsd() {
     run $sudo ln -sf /usr/local/bin/gmake      bin/make
     run $sudo ln -sf /usr/local/bin/gstat      bin/stat
     run $sudo ln -sf /usr/local/bin/gdate      bin/date
+    run $sudo ln -sf /usr/local/bin/ghead      bin/head
     run $sudo ln -sf /usr/local/bin/gnproc     bin/nproc
     run $sudo ln -sf /usr/local/bin/gbase64    bin/base64
     run $sudo ln -sf /usr/local/bin/gunlink    bin/unlink
@@ -43,6 +44,7 @@ __setup_openbsd() {
     run $sudo ln -sf /usr/local/bin/gmake      bin/make
     run $sudo ln -sf /usr/local/bin/gstat      bin/stat
     run $sudo ln -sf /usr/local/bin/gdate      bin/date
+    run $sudo ln -sf /usr/local/bin/ghead      bin/head
     run $sudo ln -sf /usr/local/bin/gnproc     bin/nproc
     run $sudo ln -sf /usr/local/bin/gbase64    bin/base64
     run $sudo ln -sf /usr/local/bin/gunlink    bin/unlink
@@ -60,6 +62,7 @@ __setup_netbsd() {
     run $sudo ln -sf /usr/pkg/bin/gmake      bin/make
     run $sudo ln -sf /usr/pkg/bin/gstat      bin/stat
     run $sudo ln -sf /usr/pkg/bin/gdate      bin/date
+    run $sudo ln -sf /usr/pkg/bin/ghead      bin/head
     run $sudo ln -sf /usr/pkg/bin/gnproc     bin/nproc
     run $sudo ln -sf /usr/pkg/bin/gbase64    bin/base64
     run $sudo ln -sf /usr/pkg/bin/gunlink    bin/unlink
