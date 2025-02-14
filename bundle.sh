@@ -170,6 +170,6 @@ if [ "$TARGET_OS_KIND" = linux ] ; then
     esac
 fi
 
-run cd "$ORGIN_DIR"
+run cd "$ORIGIN_DIR"
 
 run bsdtar cvaPf "$PREFIX.tar.xz" "$PREFIX"
