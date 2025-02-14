@@ -22,50 +22,50 @@ __setup_freebsd
 __setup_freebsd() {
     run $sudo pkg install -y curl libnghttp2 coreutils gsed gmake gcc
 
-    run $sudo ln -sf /usr/local/bin/gln        /usr/bin/ln
-    run $sudo ln -sf /usr/local/bin/gsed       /usr/bin/sed
-    run $sudo ln -sf /usr/local/bin/gmake      /usr/bin/make
-    run $sudo ln -sf /usr/local/bin/gstat      /usr/bin/stat
-    run $sudo ln -sf /usr/local/bin/gdate      /usr/bin/date
-    run $sudo ln -sf /usr/local/bin/gnproc     /usr/bin/nproc
-    run $sudo ln -sf /usr/local/bin/gbase64    /usr/bin/base64
-    run $sudo ln -sf /usr/local/bin/gunlink    /usr/bin/unlink
-    run $sudo ln -sf /usr/local/bin/ginstall   /usr/bin/install
-    run $sudo ln -sf /usr/local/bin/grealpath  /usr/bin/realpath
-    run $sudo ln -sf /usr/local/bin/gsha256sum /usr/bin/sha256sum
+    run $sudo ln -sf /usr/local/bin/gln        bin/ln
+    run $sudo ln -sf /usr/local/bin/gsed       bin/sed
+    run $sudo ln -sf /usr/local/bin/gmake      bin/make
+    run $sudo ln -sf /usr/local/bin/gstat      bin/stat
+    run $sudo ln -sf /usr/local/bin/gdate      bin/date
+    run $sudo ln -sf /usr/local/bin/gnproc     bin/nproc
+    run $sudo ln -sf /usr/local/bin/gbase64    bin/base64
+    run $sudo ln -sf /usr/local/bin/gunlink    bin/unlink
+    run $sudo ln -sf /usr/local/bin/ginstall   bin/install
+    run $sudo ln -sf /usr/local/bin/grealpath  bin/realpath
+    run $sudo ln -sf /usr/local/bin/gsha256sum bin/sha256sum
 }
 
 __setup_openbsd() {
     run $sudo pkg_add coreutils gsed gmake gcc%11 libarchive
 
-    run $sudo ln -sf /usr/local/bin/gln        /usr/bin/ln
-    run $sudo ln -sf /usr/local/bin/gsed       /usr/bin/sed
-    run $sudo ln -sf /usr/local/bin/gmake      /usr/bin/make
-    run $sudo ln -sf /usr/local/bin/gstat      /usr/bin/stat
-    run $sudo ln -sf /usr/local/bin/gdate      /usr/bin/date
-    run $sudo ln -sf /usr/local/bin/gnproc     /usr/bin/nproc
-    run $sudo ln -sf /usr/local/bin/gbase64    /usr/bin/base64
-    run $sudo ln -sf /usr/local/bin/gunlink    /usr/bin/unlink
-    run $sudo ln -sf /usr/local/bin/ginstall   /usr/bin/install
-    run $sudo ln -sf /usr/local/bin/grealpath  /usr/bin/realpath
-    run $sudo ln -sf /usr/local/bin/gsha256sum /usr/bin/sha256sum
+    run $sudo ln -sf /usr/local/bin/gln        bin/ln
+    run $sudo ln -sf /usr/local/bin/gsed       bin/sed
+    run $sudo ln -sf /usr/local/bin/gmake      bin/make
+    run $sudo ln -sf /usr/local/bin/gstat      bin/stat
+    run $sudo ln -sf /usr/local/bin/gdate      bin/date
+    run $sudo ln -sf /usr/local/bin/gnproc     bin/nproc
+    run $sudo ln -sf /usr/local/bin/gbase64    bin/base64
+    run $sudo ln -sf /usr/local/bin/gunlink    bin/unlink
+    run $sudo ln -sf /usr/local/bin/ginstall   bin/install
+    run $sudo ln -sf /usr/local/bin/grealpath  bin/realpath
+    run $sudo ln -sf /usr/local/bin/gsha256sum bin/sha256sum
 }
 
 __setup_netbsd() {
     run $sudo pkgin -y update
     run $sudo pkgin -y install coreutils gsed gmake bsdtar
 
-    run $sudo ln -sf /usr/pkg/bin/gln        /usr/bin/ln
-    run $sudo ln -sf /usr/pkg/bin/gsed       /usr/bin/sed
-    run $sudo ln -sf /usr/pkg/bin/gmake      /usr/bin/make
-    run $sudo ln -sf /usr/pkg/bin/gstat      /usr/bin/stat
-    run $sudo ln -sf /usr/pkg/bin/gdate      /usr/bin/date
-    run $sudo ln -sf /usr/pkg/bin/gnproc     /usr/bin/nproc
-    run $sudo ln -sf /usr/pkg/bin/gbase64    /usr/bin/base64
-    run $sudo ln -sf /usr/pkg/bin/gunlink    /usr/bin/unlink
-    run $sudo ln -sf /usr/pkg/bin/ginstall   /usr/bin/install
-    run $sudo ln -sf /usr/pkg/bin/grealpath  /usr/bin/realpath
-    run $sudo ln -sf /usr/pkg/bin/gsha256sum /usr/bin/sha256sum
+    run $sudo ln -sf /usr/pkg/bin/gln        bin/ln
+    run $sudo ln -sf /usr/pkg/bin/gsed       bin/sed
+    run $sudo ln -sf /usr/pkg/bin/gmake      bin/make
+    run $sudo ln -sf /usr/pkg/bin/gstat      bin/stat
+    run $sudo ln -sf /usr/pkg/bin/gdate      bin/date
+    run $sudo ln -sf /usr/pkg/bin/gnproc     bin/nproc
+    run $sudo ln -sf /usr/pkg/bin/gbase64    bin/base64
+    run $sudo ln -sf /usr/pkg/bin/gunlink    bin/unlink
+    run $sudo ln -sf /usr/pkg/bin/ginstall   bin/install
+    run $sudo ln -sf /usr/pkg/bin/grealpath  bin/realpath
+    run $sudo ln -sf /usr/pkg/bin/gsha256sum bin/sha256sum
 }
 
 __setup_macos() {
@@ -79,12 +79,14 @@ __setup_linux() {
         ubuntu)
             run $sudo apt-get -y update
             run $sudo apt-get -y install curl libarchive-tools make g++ patchelf
-            run $sudo ln -sf /usr/bin/make /usr/bin/gmake
-            run $sudo ln -sf /usr/bin/sed  /usr/bin/gsed
+            run $sudo ln -sf /usr/bin/make bin/gmake
+            run $sudo ln -sf /usr/bin/sed  bin/gsed
             ;;
         alpine)
             run $sudo apk update
             run $sudo apk add libarchive-tools make g++ libc-dev linux-headers patchelf
+            run $sudo ln -sf /bin/make bin/gmake
+            run $sudo ln -sf /bin/sed  bin/gsed
     esac
 }
 
@@ -96,11 +98,15 @@ unset sudo
 
 TARGET_OS_KIND="${2%%-*}"
 
+install -d bin/
+
 __setup_$TARGET_OS_KIND
+
+export PATH="$PWD/bin:$PATH"
 
 PREFIX="perl-$1-$2"
 
-run $sudo install -d -g `id -g -n` -o `id -u -n` "$PREFIX"
+run $sudo install -d -g `id -g` -o `id -u` "$PREFIX"
 
 [ -f cacert.pem ] && run export SSL_CERT_FILE="$PWD/cacert.pem"
 
@@ -110,11 +116,13 @@ run cp build.sh bundle.sh "$PREFIX/"
 
 ######################################################
 
+ORIGIN_DIR="$PWD"
+
 run cd "$PREFIX/bin/"
 
 run install -d include/ lib/
 
-LIBCRYPT="$("$CC" -print-file-name=libcrypt.a)"
+LIBCRYPT="$(gcc -print-file-name=libcrypt.a)"
 
 case $LIBCRYPT in
     /*) cp -L "$LIBCRYPT" "$PACKAGE_INSTALL_DIR/lib/"
@@ -143,15 +151,7 @@ done
 
 gsed -i '3a =pod' pod2html
 
-######################################################
-
 if [ "$TARGET_OS_KIND" = linux ] ; then
-    run mv perl.c "$PREFIX/bin/"
-
-    run cd "$PREFIX/bin/"
-
-    run install -d ../runtime/
-
     run mv "perl$1" "perl$1.exe"
 
     run chmod -x "perl$1.exe"
@@ -159,19 +159,29 @@ if [ "$TARGET_OS_KIND" = linux ] ; then
     DYNAMIC_LOADER_PATH="$(patchelf --print-interpreter "perl$1.exe")"
     DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
 
+    run mv "$ORIGIN_DIR/perl.c" .
+
     gsed -i "s|ld-linux-x86-64.so.2|$DYNAMIC_LOADER_NAME|" perl.c
 
     run gcc -static -std=gnu99 -Os -flto -s -o "perl$1" perl.c
 
     NEEDEDs="$(patchelf --print-needed "perl$1.exe")"
 
+    run install -d ../runtime/
+    run cd         ../runtime/
+
     for NEEDED_FILENAME in $NEEDEDs
     do
         NEEDED_FILEPATH="$(gcc -print-file-name="$NEEDED_FILENAME")"
-        run cp -L "$NEEDED_FILEPATH" ../runtime/
+        run cp -L "$NEEDED_FILEPATH" .
     done
 
-    run cd -
+    case $DYNAMIC_LOADER_NAME in
+        ld-musl-*.so.1)
+            run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
+    esac
 fi
+
+run cd "$ORGIN_DIR"
 
 run bsdtar cvaPf "$PREFIX.tar.xz" "$PREFIX"
