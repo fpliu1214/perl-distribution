@@ -133,7 +133,7 @@ do
     if [ "$X" = '#!' ] ; then
         Y="$(head -n 1 "$f")"
 
-        if [ "$Y" = "#!$PACKAGE_INSTALL_DIR/bin/perl" ] ; then
+        if [ "$Y" = "#!$PREFIX/bin/perl" ] ; then
             gsed -i '1,4d' "$f"
             gsed -i '1s|^|#!/bin/sh\nexec "$(dirname "$0")"/perl -x "$0" "$@"\n#!perl\n|' "$f"
         fi
