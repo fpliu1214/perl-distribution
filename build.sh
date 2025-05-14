@@ -681,6 +681,7 @@ src-sha: $PACKAGE_SRC_SHA
 dep-pkg: $PACKAGE_DEP_PKG
 install: $PACKAGE_INSTALL
 builtat: $PACKAGE_INSTALL_UTS
+prefix:  $PACKAGE_INSTALL_DIR
 EOF
 
     #########################################################################################
