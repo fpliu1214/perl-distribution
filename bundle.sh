@@ -115,7 +115,7 @@ run $sudo install -d -g `id -g` -o `id -u` "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run cp build.sh bundle.sh config.pl "$PREFIX/"
+run cp build.sh bundle.sh config.pl config.txt "$PREFIX/"
 
 ######################################################
 
@@ -135,20 +135,7 @@ CONFIG_PM_FILEPATH="$CONFIG_DIR/Config.pl"
 
 gsed -i "s|CONFIG_DIR|$CONFIG_DIR|" config.pl
 
-gsed -i \
-    -e '/tie returns the object/r config.pl' \
-    -e '/cc => /d' \
-    -e '/version => /a
-installprefix => "$installprefix",
-perlpath => "$perlpath",
-startperl => "#!$perlpath",
-cc => "$cc",
-ld => "$cc",
-ccflags => "$ccflags",
-ldflags => "$ldflags",
-lddlflags => "$lddlflags $ldflags",
-cppflags => "$cppflags",
-' "$CONFIG_PM_FILEPATH"
+gsed -i -e '/tie returns the object/r config.pl' -e '/cc => /d' -e '/version => /r config.txt' "$CONFIG_PM_FILEPATH"
 
 ######################################################
 
