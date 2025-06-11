@@ -701,9 +701,9 @@ EOF
 }
 
 package_info_perl() {
-    PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.40.1.tar.xz'
-    PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.40/perl-5.40.1.tar.xz'
-    PACKAGE_SRC_SHA='dfa20c2eef2b4af133525610bbb65dd13777ecf998c9c5b1ccf0d308e732ee3f'
+    PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.40.2.tar.xz'
+    PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.40/perl-5.40.2.tar.xz'
+    PACKAGE_SRC_SHA='0551c717458e703ef7972307ab19385edfa231198d88998df74e12226abf563b'
 
     if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
         PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Dccflags="\"$CFLAGS\"" -Dldflags="\"$LDFLAGS\"" -Dcppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Ud_procselfexe && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'

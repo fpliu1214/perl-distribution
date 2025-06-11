@@ -115,13 +115,44 @@ run $sudo install -d -g `id -g` -o `id -u` "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run cp build.sh bundle.sh "$PREFIX/"
+run cp build.sh bundle.sh config.pl "$PREFIX/"
 
 ######################################################
 
 ORIGIN_DIR="$PWD"
 
-run cd "$PREFIX/bin"
+run cd "$PREFIX"
+
+if [ "$TARGET_OS_KIND" != darwin ] ; then
+    gsed -i 's|-bundle -undefined dynamic_lookup|-shared|' config.pl
+fi
+
+######################################################
+
+CONFIG_HEAVY_FILEPATH="$(find "lib/$1" -mindepth 2 -maxdepth 2 -type f -name 'Config_heavy.pl')"
+CONFIG_DIR="${CONFIG_HEAVY_FILEPATH%/*}"
+CONFIG_PM_FILEPATH="$CONFIG_DIR/Config.pl"
+
+gsed -i "s|CONFIG_DIR|$CONFIG_DIR|" config.pl
+
+gsed -i \
+    -e '/tie returns the object/r config.pl' \
+    -e '/cc => /d' \
+    -e '/version => /a
+installprefix => "$installprefix",
+perlpath => "$perlpath",
+startperl => "#!$perlpath",
+cc => "$cc",
+ld => "$cc",
+ccflags => "$ccflags",
+ldflags => "$ldflags",
+lddlflags => "$lddlflags $ldflags",
+cppflags => "$cppflags",
+' "$CONFIG_PM_FILEPATH"
+
+######################################################
+
+run cd bin
 
 # change hard-link to soft-link
 ln -sf perl5.* perl
