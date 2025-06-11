@@ -1,6 +1,6 @@
 my $lddlflags = '-bundle -undefined dynamic_lookup';
 
-my $coredir = relocate_inc('.../../lib/5.40.0/darwin-thread-multi-2level/CORE');
+my $coredir = relocate_inc('.../../CONFIG_DIR/CORE');
 
 my $installprefix = relocate_inc('.../..');
 
