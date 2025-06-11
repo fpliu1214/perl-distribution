@@ -123,7 +123,7 @@ ORIGIN_DIR="$PWD"
 
 run cd "$PREFIX"
 
-if [ "$TARGET_OS_KIND" != darwin ] ; then
+if [ "$TARGET_OS_KIND" != macos ] ; then
     gsed -i 's|-bundle -undefined dynamic_lookup|-shared|' config.pl
 fi
 
