@@ -131,7 +131,7 @@ fi
 
 CONFIG_HEAVY_FILEPATH="$(find "lib/$1" -mindepth 2 -maxdepth 2 -type f -name 'Config_heavy.pl')"
 CONFIG_DIR="${CONFIG_HEAVY_FILEPATH%/*}"
-CONFIG_PM_FILEPATH="$CONFIG_DIR/Config.pl"
+CONFIG_PM_FILEPATH="$CONFIG_DIR/Config.pm"
 
 gsed -i "s|CONFIG_DIR|$CONFIG_DIR|" config.pl
 
