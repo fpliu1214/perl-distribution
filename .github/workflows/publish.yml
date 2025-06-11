@@ -20,7 +20,7 @@ jobs:
 
           cat > QUERY <<EOF
           {
-            repository(owner: "leleliu008", name: "perl-distribution") {
+            repository(owner: "${{ github.repository_owner }}", name: "perl-distribution") {
                 latestRelease {
                   name
                 }
