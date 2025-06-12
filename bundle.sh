@@ -138,7 +138,12 @@ gsed -i "s|CONFIG_DIR|$CONFIG_DIR|" config.pl
 gsed -i -e '/tie returns the object/r config.pl' -e '/cc => /d' -e '/version => /r config.txt' "$CONFIG_PM_FILEPATH"
 
 if [ -r /usr/include/crypt.h ] ; then
-    cp  /usr/include/crypt.h "$CONFIG_DIR/CORE/"
+    cp  /usr/include/crypt.h .
+
+    gsed -i '/<sys\/cdefs.h>/r sys-cdefs.h' crypt.h
+    gsed -i '/<sys\/cdefs.h>/d' crypt.h
+
+    mv crypt.h "$CONFIG_DIR/CORE/"
 fi
 
 ######################################################
