@@ -1,9 +1,11 @@
 # perl-distribution
 A self-contained and relocatable Perl distribution
 
-## change
+## changes
 
-To make perl protable, I change some behaver. I allow user set their `cc`, `cflags`, `cppflags`, `ldflags` via environment variable when creating perl modules.
+**1. crypt.h is included in the distribution for Linux**
+
+**2. user can set `cc` `cflags` `cppflags` `ldflags` via environment variable when building perl modules**
 
 |||
 |-|-|
