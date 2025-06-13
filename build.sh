@@ -478,10 +478,10 @@ inspect_install_arguments() {
             RANLIB="$(command -v ranlib)" || abort 1 "command not found: ranlib"
         }
 
-        CC_ARGS="-fPIC -fno-common"
+        CC_ARGS='-fPIC'
 
         # https://gcc.gnu.org/onlinedocs/gcc/Link-Options.html
-        LD_ARGS="-Wl,--as-needed -Wl,-z,muldefs -Wl,--allow-multiple-definition"
+        LD_ARGS='-Wl,--as-needed'
     fi
 
     #########################################################################################
@@ -515,14 +515,6 @@ inspect_install_arguments() {
          netbsd) LD_ARGS="$LD_ARGS -lpthread" ;;
         openbsd) LD_ARGS="$LD_ARGS -lpthread" ;;
     esac
-
-    #########################################################################################
-
-    PATH="$AUX_INSTALL_DIR/bin:$PACKAGE_INSTALL_DIR/bin:$PATH"
-
-    PP_ARGS="$PP_ARGS -I$PACKAGE_INSTALL_DIR/include"
-
-    LD_ARGS="$LD_ARGS -L$PACKAGE_INSTALL_DIR/lib"
 
     #########################################################################################
 

@@ -115,7 +115,7 @@ run $sudo install -d -g `id -g` -o `id -u` "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run mv build.sh bundle.sh config.pl config.txt perl.c sys-cdefs.h "$PREFIX/"
+run mv README.md build.sh bundle.sh config.pl config.txt perl.c sys-cdefs.h "$PREFIX/"
 
 ######################################################
 
