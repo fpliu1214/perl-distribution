@@ -115,7 +115,7 @@ run $sudo install -d -g `id -g` -o `id -u` "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run cp build.sh bundle.sh config.pl config.txt "$PREFIX/"
+run mv build.sh bundle.sh config.pl config.txt perl.c sys-cdefs.h "$PREFIX/"
 
 ######################################################
 
@@ -177,7 +177,7 @@ if [ "$TARGET_OS_KIND" = linux ] ; then
     DYNAMIC_LOADER_PATH="$(patchelf --print-interpreter "perl$1.exe")"
     DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
 
-    run mv "$ORIGIN_DIR/perl.c" .
+    run mv ../perl.c .
 
     gsed -i "s|ld-linux-x86-64.so.2|$DYNAMIC_LOADER_NAME|" perl.c
 
