@@ -84,7 +84,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target-version: ['14.2', '14.1', '14.0', '13.4', '13.3', '13.2']
+        target-version: ['14.3', '14.2', '14.1', '14.0', '13.5', '13.4', '13.3', '13.2']
 
     steps:
       - uses: actions/checkout@v4
@@ -272,7 +272,7 @@ jobs:
       - run: tar xf ubuntu-base-24.04.2-base-*.tar.gz -C ubuntu-rootfs
 
       - run: cp -p /etc/resolv.conf ubuntu-rootfs/etc/
-      - run: cp build.sh bundle.sh config.pl config.txt perl.c sys-cdefs.h ubuntu-rootfs/
+      - run: cp README.md build.sh bundle.sh config.pl config.txt perl.c sys-cdefs.h ubuntu-rootfs/
 
       - run: sudo mount -o bind  /dev ubuntu-rootfs/dev
       - run: sudo mount -t proc  none ubuntu-rootfs/proc
