@@ -696,12 +696,20 @@ package_info_perl() {
     PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.40.2.tar.xz'
     PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.40/perl-5.40.2.tar.xz'
     PACKAGE_SRC_SHA='0551c717458e703ef7972307ab19385edfa231198d88998df74e12226abf563b'
+    PACKAGE_CONFIGURE_ARGS='-des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Dman1dir=none -Dman3dir=none "-Dprefix=$PACKAGE_INSTALL_DIR" "-Dcc=\$CC" "-Dar=\$AR"'
 
     if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
-        PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Dccflags="\"$CFLAGS\"" -Dldflags="\"$LDFLAGS\"" -Dcppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Ud_procselfexe && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
+        PACKAGE_CONFIGURE_ARGS="$PACKAGE_CONFIGURE_ARGS -Dccflags='\$CFLAGS' -Dldflags='\$LDFLAGS' -Dcppflags='\$CPPFLAGS'"
     else
-        PACKAGE_INSTALL='run ./Configure "-Dprefix=$PACKAGE_INSTALL_DIR" -Dcc="\"$CC\"" -Dar="\"$AR\"" -Accflags="\"$CFLAGS\"" -Aldflags="\"$LDFLAGS\"" -Acppflags="\"$CPPFLAGS\"" -Dman1dir=none -Dman3dir=none -des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Ud_procselfexe && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
+        PACKAGE_CONFIGURE_ARGS="$PACKAGE_CONFIGURE_ARGS -Accflags='\$CFLAGS' -Aldflags='\$LDFLAGS' -Acppflags='\$CPPFLAGS'"
+
+        if [ "$NATIVE_PLATFORM_KIND" = linux ] ; then
+            # https://github.com/Perl/perl5/issues/22913
+            PACKAGE_CONFIGURE_ARGS="$PACKAGE_CONFIGURE_ARGS -Ud_procselfexe"
+        fi
     fi
+
+    PACKAGE_INSTALL='run ./Configure "$PACKAGE_CONFIGURE_ARGS" && run "$GMAKE" "--jobs=$BUILD_NJOBS" && run "$GMAKE" install'
 }
 
 help() {
