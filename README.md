@@ -7,12 +7,12 @@ A self-contained and relocatable Perl distribution
 
 **2. user can set `cc` `cflags` `cppflags` `ldflags` via environment variable when building perl modules**
 
-|||
-|-|-|
-|`cc`|`CC_FOR_BUILD` `CC`|
-|`cflags`|`CFLAGS_FOR_BUILD` `CFLAGS`|
-|`cppflags`|`CPPFLAGS_FOR_BUILD` `CPPFLAGS`|
-|`ldflags`|`LDFLAGS_FOR_BUILD` `LDFLAGS`|
+||||
+|-|-|-|
+|`cc`|`CC_FOR_BUILD`|`CC`|
+|`cflags`|`CFLAGS_FOR_BUILD`|`CFLAGS`|
+|`cppflags`|`CPPFLAGS_FOR_BUILD`|`CPPFLAGS`|
+|`ldflags`|`LDFLAGS_FOR_BUILD`|`LDFLAGS`|
 
 `FOO_FOR_BUILD` take precedence over `FOO`
 
