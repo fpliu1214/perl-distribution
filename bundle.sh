@@ -237,7 +237,6 @@ else
         }
 
         run cd ..
-        run mv runtime ../
     fi
 fi
 
@@ -261,7 +260,7 @@ do
     fi
 done
 
-gsed -i '3a =pod' pod2html
+gsed -i '3a =pod' pod2html.pl
 
 ######################################################
 

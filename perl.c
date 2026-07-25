@@ -269,11 +269,6 @@ int main(int argc, char* argv[]) {
 
     args[n] = NULL;
 
-    for (int i = 0; ; i++) {
-        if (args[i] == NULL) break;
-        puts(args[i]);
-    }
-
     execv (dynamicLoaderPath, args);
     perror(dynamicLoaderPath);
 #else
