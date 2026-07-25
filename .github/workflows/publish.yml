@@ -183,9 +183,11 @@ jobs:
           10.0)
               curl -LO https://github.com/leleliu008/uppm-package-repository-netbsd-10.0-amd64/releases/download/2025.07.25/bsdtar-3.8.1-netbsd-10.0-amd64.release.tar.xz
               tar vxf bsdtar-3.8.1-netbsd-10.0-amd64.release.tar.xz --strip-components=1
+              ;;
             9.*)
               curl -LO https://github.com/leleliu008/uppm-package-repository-netbsd-9.2-amd64/releases/download/2025.07.23/bsdtar-3.8.1-netbsd-9.2-amd64.release.tar.xz
               tar vxf bsdtar-3.8.1-netbsd-10.0-amd64.release.tar.xz --strip-components=1
+              ;;
           esac
 
       - uses: cross-platform-actions/action@master
