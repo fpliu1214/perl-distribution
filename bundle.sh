@@ -92,21 +92,40 @@ __setup_openbsd() {
 }
 
 __setup_netbsd() {
-    run $sudo pkgin -y update
-    run $sudo pkgin -y install coreutils findutils gsed gmake bsdtar
+    case "$(uname -r)" in
+        10.1)
+            run $sudo pkgin -y update
+            run $sudo pkgin -y install coreutils findutils gsed gmake bsdtar
 
-    run $sudo ln -sf /usr/pkg/bin/gln        bin/ln
-    run $sudo ln -sf /usr/pkg/bin/gsed       bin/sed
-    run $sudo ln -sf /usr/pkg/bin/gmake      bin/make
-    run $sudo ln -sf /usr/pkg/bin/gstat      bin/stat
-    run $sudo ln -sf /usr/pkg/bin/gdate      bin/date
-    run $sudo ln -sf /usr/pkg/bin/ghead      bin/head
-    run $sudo ln -sf /usr/pkg/bin/gnproc     bin/nproc
-    run $sudo ln -sf /usr/pkg/bin/gbase64    bin/base64
-    run $sudo ln -sf /usr/pkg/bin/gunlink    bin/unlink
-    run $sudo ln -sf /usr/pkg/bin/ginstall   bin/install
-    run $sudo ln -sf /usr/pkg/bin/grealpath  bin/realpath
-    run $sudo ln -sf /usr/pkg/bin/gsha256sum bin/sha256sum
+            run $sudo ln -sf /usr/pkg/bin/gln        bin/ln
+            run $sudo ln -sf /usr/pkg/bin/gsed       bin/sed
+            run $sudo ln -sf /usr/pkg/bin/gmake      bin/make
+            run $sudo ln -sf /usr/pkg/bin/gstat      bin/stat
+            run $sudo ln -sf /usr/pkg/bin/gdate      bin/date
+            run $sudo ln -sf /usr/pkg/bin/ghead      bin/head
+            run $sudo ln -sf /usr/pkg/bin/gnproc     bin/nproc
+            run $sudo ln -sf /usr/pkg/bin/gbase64    bin/base64
+            run $sudo ln -sf /usr/pkg/bin/gunlink    bin/unlink
+            run $sudo ln -sf /usr/pkg/bin/ginstall   bin/install
+            run $sudo ln -sf /usr/pkg/bin/grealpath  bin/realpath
+            run $sudo ln -sf /usr/pkg/bin/gsha256sum bin/sha256sum
+            ;;
+        10.0)
+            for x in 'grep-3.12' 'gsed-4.9' 'gmake-4.4.1' 'coreutils-9.4' 'findutils-4.9.0' 'bsdtar-3.8.1'
+            do
+                f="$x-netbsd-10.0-amd64.release.tar.xz"
+                wfetch "https://github.com/leleliu008/uppm-package-repository-netbsd-10.0-amd64/releases/download/2025.07.25/$f" --no-buffer
+                run bsdtar xf "$f" --strip-components=1
+            done
+            ;;
+        9.*)
+            for x in 'grep-3.12' 'gsed-4.9' 'gmake-4.4.1' 'coreutils-9.4' 'findutils-4.9.0' 'bsdtar-3.8.1'
+            do
+                f="$x-netbsd-10.0-amd64.release.tar.xz"
+                wfetch "https://github.com/leleliu008/uppm-package-repository-netbsd-9.2-amd64/releases/download/2025.07.23/$f" --no-buffer
+                run bsdtar xf "$f" --strip-components=1
+            done
+    esac
 }
 
 __setup_macos() {
