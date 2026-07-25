@@ -115,7 +115,7 @@ __setup_netbsd() {
             do
                 f="$x-netbsd-10.0-amd64.release.tar.xz"
                 run curl -LO "https://github.com/leleliu008/uppm-package-repository-netbsd-10.0-amd64/releases/download/2025.07.25/$f"
-                run bsdtar xf "$f" --strip-components=1
+                run tar xf "$f" --strip-components=1
             done
             ;;
         9.*)
@@ -123,7 +123,7 @@ __setup_netbsd() {
             do
                 f="$x-netbsd-10.0-amd64.release.tar.xz"
                 run curl -LO "https://github.com/leleliu008/uppm-package-repository-netbsd-9.2-amd64/releases/download/2025.07.23/$f"
-                run bsdtar xf "$f" --strip-components=1
+                run tar xf "$f" --strip-components=1
             done
     esac
 }
