@@ -114,7 +114,7 @@ __setup_netbsd() {
             for x in 'grep-3.12' 'gsed-4.9' 'gmake-4.4.1' 'coreutils-9.4' 'findutils-4.9.0' 'bsdtar-3.8.1'
             do
                 f="$x-netbsd-10.0-amd64.release.tar.xz"
-                wfetch "https://github.com/leleliu008/uppm-package-repository-netbsd-10.0-amd64/releases/download/2025.07.25/$f" --no-buffer
+                curl -LO "https://github.com/leleliu008/uppm-package-repository-netbsd-10.0-amd64/releases/download/2025.07.25/$f"
                 run bsdtar xf "$f" --strip-components=1
             done
             ;;
@@ -122,7 +122,7 @@ __setup_netbsd() {
             for x in 'grep-3.12' 'gsed-4.9' 'gmake-4.4.1' 'coreutils-9.4' 'findutils-4.9.0' 'bsdtar-3.8.1'
             do
                 f="$x-netbsd-10.0-amd64.release.tar.xz"
-                wfetch "https://github.com/leleliu008/uppm-package-repository-netbsd-9.2-amd64/releases/download/2025.07.23/$f" --no-buffer
+                curl -LO "https://github.com/leleliu008/uppm-package-repository-netbsd-9.2-amd64/releases/download/2025.07.23/$f"
                 run bsdtar xf "$f" --strip-components=1
             done
     esac
