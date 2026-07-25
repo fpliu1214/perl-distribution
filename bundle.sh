@@ -257,6 +257,6 @@ gsed -i '3a =pod' pod2html
 
 ######################################################
 
-run cd ..
+run cd ../..
 
 run bsdtar cvaPf "$PREFIX.tar.xz" "$PREFIX"
