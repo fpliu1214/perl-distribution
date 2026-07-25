@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2024-2025 刘富频
+# Copyright (c) 2024-2026 刘富频
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ set -e
 # https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_05_03
 unset IFS
 
-COLOR_RED='\033[0;31m'          # Red
-COLOR_GREEN='\033[0;32m'        # Green
-COLOR_YELLOW='\033[0;33m'       # Yellow
-COLOR_BLUE='\033[0;94m'         # Blue
-COLOR_PURPLE='\033[0;35m'       # Purple
-COLOR_OFF='\033[0m'             # Reset
+COLOR_RED='\033[0;31m'
+COLOR_GREEN='\033[0;32m'
+COLOR_YELLOW='\033[0;33m'
+COLOR_BLUE='\033[0;94m'
+COLOR_PURPLE='\033[0;35m'
+COLOR_OFF='\033[0m'
 
 print() {
     printf '%b' "$*"
@@ -397,13 +397,13 @@ inspect_install_arguments() {
 
     #########################################################################################
 
-    NATIVE_PLATFORM_KIND="$(uname -s | tr A-Z a-z)"
+    NATIVE_PLATFORM_TYPE="$(uname -s | tr A-Z a-z)"
     NATIVE_PLATFORM_ARCH="$(uname -m)"
 
     #########################################################################################
 
     if [ -z "$BUILD_NJOBS" ] ; then
-        if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
+        if [ "$NATIVE_PLATFORM_TYPE" = darwin ] ; then
             NATIVE_PLATFORM_NCPU="$(sysctl -n machdep.cpu.thread_count)"
         else
             NATIVE_PLATFORM_NCPU="$(nproc)"
@@ -439,7 +439,7 @@ inspect_install_arguments() {
     unset PP_ARGS
     unset LD_ARGS
 
-    if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
+    if [ "$NATIVE_PLATFORM_TYPE" = darwin ] ; then
         [ -z "$CC"      ] &&      CC="$(xcrun --sdk macosx --find clang)"
         [ -z "$CXX"     ] &&     CXX="$(xcrun --sdk macosx --find clang++)"
         [ -z "$AS"      ] &&      AS="$(xcrun --sdk macosx --find as)"
@@ -504,14 +504,14 @@ inspect_install_arguments() {
                 LD_ARGS="$LD_ARGS -flto"
             fi
 
-            if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
+            if [ "$NATIVE_PLATFORM_TYPE" = darwin ] ; then
                 LD_ARGS="$LD_ARGS -Wl,-S"
             else
                 LD_ARGS="$LD_ARGS -Wl,-s"
             fi
     esac
 
-    case $NATIVE_PLATFORM_KIND in
+    case $NATIVE_PLATFORM_TYPE in
          netbsd) LD_ARGS="$LD_ARGS -lpthread" ;;
         openbsd) LD_ARGS="$LD_ARGS -lpthread" ;;
     esac
@@ -693,17 +693,17 @@ EOF
 }
 
 package_info_perl() {
-    PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.40.2.tar.xz'
-    PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.40/perl-5.40.2.tar.xz'
-    PACKAGE_SRC_SHA='0551c717458e703ef7972307ab19385edfa231198d88998df74e12226abf563b'
+    PACKAGE_SRC_URL='https://www.cpan.org/src/5.0/perl-5.42.2.tar.xz'
+    PACKAGE_SRC_URI='https://distfiles.macports.org/perl5.42/perl-5.42.2.tar.xz'
+    PACKAGE_SRC_SHA='0a585eeb9e363c0f80482ddb3571625250c2c86aeb408853e8ea50805cfb14bb'
     PACKAGE_CONFIGURE_ARGS='-des -Dmake=gmake -Duselargefiles -Duseshrplib=false -Dusethreads -Dusenm=false -Dusedl=true -Duserelocatableinc=true -Dman1dir=none -Dman3dir=none -Dprefix="$PACKAGE_INSTALL_DIR" -Dcc="$CC" -Dar="$AR"'
 
-    if [ "$NATIVE_PLATFORM_KIND" = darwin ] ; then
+    if [ "$NATIVE_PLATFORM_TYPE" = darwin ] ; then
         PACKAGE_CONFIGURE_ARGS="$PACKAGE_CONFIGURE_ARGS -Dccflags=\"\$CFLAGS\" -Dldflags=\"\$LDFLAGS\" -Dcppflags=\"\$CPPFLAGS\""
     else
         PACKAGE_CONFIGURE_ARGS="$PACKAGE_CONFIGURE_ARGS -Accflags=\"\$CFLAGS\" -Aldflags=\"\$LDFLAGS\" -Acppflags=\"\$CPPFLAGS\""
 
-        if [ "$NATIVE_PLATFORM_KIND" = linux ] ; then
+        if [ "$NATIVE_PLATFORM_TYPE" = linux ] ; then
             # https://github.com/Perl/perl5/issues/22913
             PACKAGE_CONFIGURE_ARGS="$PACKAGE_CONFIGURE_ARGS -Ud_procselfexe"
         fi
@@ -720,10 +720,10 @@ ${COLOR_GREEN}$ARG0 --help${COLOR_OFF}
 ${COLOR_GREEN}$ARG0 -h${COLOR_OFF}
     show help of this command.
 
-${COLOR_GREEN}$ARG0 perl-version${COLOR_OFF}
+${COLOR_GREEN}$ARG0 version${COLOR_OFF}
     show version of perl.
 
-${COLOR_GREEN}$ARG0 perl-info${COLOR_OFF}
+${COLOR_GREEN}$ARG0 info${COLOR_OFF}
     show information of perl.
 
 ${COLOR_GREEN}$ARG0 install [OPTIONS]${COLOR_OFF}
@@ -790,7 +790,7 @@ case $1 in
     ''|--help|-h)
         help
         ;;
-    perl-version)
+    version)
         unset PACKAGE_SRC_URL
 
         package_info_perl
@@ -801,7 +801,7 @@ case $1 in
 
         printf '%s\n' "$PACKAGE_VERSION"
         ;;
-    perl-info)
+    info)
         unset PACKAGE_SRC_URL
         unset PACKAGE_SRC_URI
         unset PACKAGE_SRC_SHA

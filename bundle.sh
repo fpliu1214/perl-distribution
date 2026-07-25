@@ -2,9 +2,9 @@
 
 set -e
 
-COLOR_GREEN='\033[0;32m'        # Green
-COLOR_PURPLE='\033[0;35m'       # Purple
-COLOR_OFF='\033[0m'             # Reset
+COLOR_GREEN='\033[0;32m'
+COLOR_PURPLE='\033[0;35m'
+COLOR_OFF='\033[0m'
 
 echo() {
     printf '%b\n' "$*"
@@ -15,12 +15,31 @@ run() {
     eval "$@"
 }
 
+__setup_midnightbsd() {
+    run $sudo mport index
+    run $sudo mport update perl5 || true
+    run $sudo mport install curl coreutils findutils gsed gmake gcc || true
+
+    run $sudo ln -sf /usr/local/bin/gln        bin/ln
+    run $sudo ln -sf /usr/local/bin/gsed       bin/sed
+    run $sudo ln -sf /usr/local/bin/gmake      bin/make
+    run $sudo ln -sf /usr/local/bin/gstat      bin/stat
+    run $sudo ln -sf /usr/local/bin/gdate      bin/date
+    run $sudo ln -sf /usr/local/bin/ghead      bin/head
+    run $sudo ln -sf /usr/local/bin/gnproc     bin/nproc
+    run $sudo ln -sf /usr/local/bin/gbase64    bin/base64
+    run $sudo ln -sf /usr/local/bin/gunlink    bin/unlink
+    run $sudo ln -sf /usr/local/bin/ginstall   bin/install
+    run $sudo ln -sf /usr/local/bin/grealpath  bin/realpath
+    run $sudo ln -sf /usr/local/bin/gsha256sum bin/sha256sum
+}
+
 __setup_dragonflybsd() {
 __setup_freebsd
 }
 
 __setup_freebsd() {
-    run $sudo pkg install -y curl libnghttp2 coreutils gsed gmake gcc
+    run $sudo pkg install -y curl libnghttp2 coreutils findutils gsed gmake gcc
 
     run $sudo ln -sf /usr/local/bin/gln        bin/ln
     run $sudo ln -sf /usr/local/bin/gsed       bin/sed
@@ -37,7 +56,13 @@ __setup_freebsd() {
 }
 
 __setup_openbsd() {
-    run $sudo pkg_add coreutils gsed gmake gcc%11 libarchive
+    if [ -z "$sudo" ] ; then
+        printf 'http://ftp.eu.openbsd.org/pub/OpenBSD\n' > /etc/installurl
+    else
+        sudo sh -c 'printf "http://ftp.eu.openbsd.org/pub/OpenBSD\n" > /etc/installurl'
+    fi
+
+    run $sudo pkg_add coreutils findutils gsed gmake gcc%11 libarchive
 
     run $sudo ln -sf /usr/local/bin/gln        bin/ln
     run $sudo ln -sf /usr/local/bin/gsed       bin/sed
@@ -55,7 +80,7 @@ __setup_openbsd() {
 
 __setup_netbsd() {
     run $sudo pkgin -y update
-    run $sudo pkgin -y install coreutils gsed gmake bsdtar
+    run $sudo pkgin -y install coreutils findutils gsed gmake bsdtar
 
     run $sudo ln -sf /usr/pkg/bin/gln        bin/ln
     run $sudo ln -sf /usr/pkg/bin/gsed       bin/sed
@@ -81,17 +106,19 @@ __setup_linux() {
     case $ID in
         ubuntu)
             run $sudo apt-get -y update
-            run $sudo apt-get -y install curl sed libarchive-tools make g++ patchelf
+            run $sudo apt-get -y install curl sed libarchive-tools make g++
             run $sudo ln -sf /usr/bin/make bin/gmake
             run $sudo ln -sf /usr/bin/sed  bin/gsed
             ;;
         alpine)
             run $sudo apk update
-            run $sudo apk add curl sed libarchive-tools make g++ libc-dev linux-headers patchelf
+            run $sudo apk add curl sed libarchive-tools make g++ libc-dev linux-headers
             run $sudo ln -sf /usr/bin/make bin/gmake
             run $sudo ln -sf     /bin/sed  bin/gsed
     esac
 }
+
+######################################################
 
 unset IFS
 
@@ -99,35 +126,37 @@ unset sudo
 
 [ "$(id -u)" -eq 0 ] || sudo=sudo
 
-TARGET_OS_KIND="${2%%-*}"
+TARGET_PLATFORM_TYPE="${2%%-*}"
 
 install -d bin/
 
-__setup_$TARGET_OS_KIND
+__setup_$TARGET_PLATFORM_TYPE
 
 export PATH="$PWD/bin:$PATH"
 
+[ -f cacert.pem ] && run export SSL_CERT_FILE="$PWD/cacert.pem"
+
+######################################################
+
 PREFIX="perl-$1-$2"
 
-run $sudo install -d -g `id -g` -o `id -u` "$PREFIX"
-
-[ -f cacert.pem ] && run export SSL_CERT_FILE="$PWD/cacert.pem"
+run $sudo install -d -g $(id -g) -o $(id -u) "$PREFIX"
 
 run ./build.sh install --prefix="$PREFIX"
 
-run mv README.md build.sh bundle.sh config.pl config.txt perl.c sys-cdefs.h "$PREFIX/"
+######################################################
+
+run mv * "$PREFIX/"
+
+run cd   "$PREFIX/"
+
+run rm LICENSE
 
 ######################################################
 
-ORIGIN_DIR="$PWD"
-
-run cd "$PREFIX"
-
-if [ "$TARGET_OS_KIND" != macos ] ; then
+if [ "$TARGET_PLATFORM_TYPE" != macos ] ; then
     gsed -i 's|-bundle -undefined dynamic_lookup|-shared|' config.pl
 fi
-
-######################################################
 
 CONFIG_HEAVY_FILEPATH="$(find "lib/$1" -mindepth 2 -maxdepth 2 -type f -name 'Config_heavy.pl')"
 CONFIG_DIR="${CONFIG_HEAVY_FILEPATH%/*}"
@@ -148,10 +177,65 @@ fi
 
 ######################################################
 
-run cd bin
+run mv *.c bin/
 
-# change hard-link to soft-link
-ln -sf perl5.* perl
+run cd bin/
+
+run rm perl
+
+run mv "perl$1" perl.exe
+
+unset CC
+
+CC="$(command -v gcc || command -v clang || command -v cc)" || abort 1 'C Compiler not found.'
+
+CC="$CC -std=gnu99 -Os -flto"
+
+if [ "$TARGET_PLATFORM_TYPE" = macos ] ; then
+    CC="$CC -Wl,-S"
+else
+    CC="$CC -Wl,-s -static"
+
+    if [ "$TARGET_PLATFORM_TYPE" = linux ] ; then
+        run "$CC" -o elftool-print-needed      elftool-print-needed.c
+        run "$CC" -o elftool-print-interpreter elftool-print-interpreter.c
+
+        NEEDEDs="$(./elftool-print-needed perl.exe)"
+
+        DYNAMIC_LOADER_PATH="$(./elftool-print-interpreter perl.exe)"
+        DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
+
+        gsed -i "s|ld-linux-x86-64\.so\.2|$DYNAMIC_LOADER_NAME|" perl.c
+
+        ######################################################
+
+        run install -d runtime/
+        run cd         runtime/
+
+        for FILENAME in $NEEDEDs
+        do
+            FILEPATH="$(gcc -print-file-name="$FILENAME")"
+            run cp -L "$FILEPATH" .
+        done
+
+        [ -f    "$DYNAMIC_LOADER_NAME" ] || {
+            case $DYNAMIC_LOADER_NAME in
+                ld-musl-*.so.1)
+                    run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
+            esac
+        }
+
+        run cd ..
+        run mv runtime ../
+    fi
+fi
+
+run "$CC" perl.c -o perl
+run "$CC" perl.c -o perl-shim -DSCRIPT_MODE
+
+take2() {
+    printf '%s\n' "$2"
+}
 
 for f in *
 do
@@ -159,49 +243,22 @@ do
 
     if [ "$X" = '#!' ] ; then
         Y="$(head -n 1 "$f")"
+        Z="$(take2 "$Y")"
+        M="${Z##*/}"
 
-        if [ "$Y" = "#!$PWD/perl" ] ; then
+        if [ "$M" = perl ] ; then
             gsed -i '1,4d' "$f"
-            gsed -i '1s|^|#!/bin/sh\nexec "$(dirname "$0")"/perl -x "$0" "$@"\n#!perl\n|' "$f"
+            run mv "$f" "$f.pl"
+            run chmod a-x "$f.pl"
+            run ln -s perl-shim "$f"
         fi
     fi
 done
 
 gsed -i '3a =pod' pod2html
 
-if [ "$TARGET_OS_KIND" = linux ] ; then
-    run mv "perl$1" "perl$1.exe"
+######################################################
 
-    run chmod -x "perl$1.exe"
-
-    DYNAMIC_LOADER_PATH="$(patchelf --print-interpreter "perl$1.exe")"
-    DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
-
-    run mv ../perl.c .
-
-    gsed -i "s|ld-linux-x86-64.so.2|$DYNAMIC_LOADER_NAME|" perl.c
-
-    run gcc -static -std=gnu99 -Os -flto -s -o "perl$1" perl.c
-
-    NEEDEDs="$(patchelf --print-needed "perl$1.exe")"
-
-    run install -d ../runtime/
-    run cd         ../runtime/
-
-    for NEEDED_FILENAME in $NEEDEDs
-    do
-        NEEDED_FILEPATH="$(gcc -print-file-name="$NEEDED_FILENAME")"
-        run cp -L "$NEEDED_FILEPATH" .
-    done
-
-    [ -f    "$DYNAMIC_LOADER_NAME" ] || {
-        case $DYNAMIC_LOADER_NAME in
-            ld-musl-*.so.1)
-                run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
-        esac
-    }
-fi
-
-run cd "$ORIGIN_DIR"
+run cd ..
 
 run bsdtar cvaPf "$PREFIX.tar.xz" "$PREFIX"
