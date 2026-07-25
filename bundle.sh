@@ -245,6 +245,8 @@ run "$CC" perl.c -o perl-shim -DSCRIPT_MODE
 
 for f in *
 do
+    [ -f "$f" ] || continue
+
     X="$(head -c2 "$f")"
 
     if [ "$X" = '#!' ] ; then
