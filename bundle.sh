@@ -231,20 +231,15 @@ fi
 run "$CC" perl.c -o perl
 run "$CC" perl.c -o perl-shim -DSCRIPT_MODE
 
-take2() {
-    printf '%s\n' "$2"
-}
-
 for f in *
 do
     X="$(head -c2 "$f")"
 
     if [ "$X" = '#!' ] ; then
         Y="$(head -n 1 "$f")"
-        Z="$(take2 "$Y")"
-        M="${Z##*/}"
+        Z="${Y##*/}"
 
-        if [ "$M" = perl ] ; then
+        if [ "$Z" = perl ] ; then
             gsed -i '1,4d' "$f"
             run mv "$f" "$f.pl"
             run chmod a-x "$f.pl"
