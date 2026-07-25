@@ -35,7 +35,20 @@ __setup_midnightbsd() {
 }
 
 __setup_dragonflybsd() {
-__setup_freebsd
+    run $sudo pkg install -y coreutils findutils gsed gmake gcc
+
+    run $sudo ln -sf /usr/local/bin/gln        bin/ln
+    run $sudo ln -sf /usr/local/bin/gsed       bin/sed
+    run $sudo ln -sf /usr/local/bin/gmake      bin/make
+    run $sudo ln -sf /usr/local/bin/gstat      bin/stat
+    run $sudo ln -sf /usr/local/bin/gdate      bin/date
+    run $sudo ln -sf /usr/local/bin/ghead      bin/head
+    run $sudo ln -sf /usr/local/bin/gnproc     bin/nproc
+    run $sudo ln -sf /usr/local/bin/gbase64    bin/base64
+    run $sudo ln -sf /usr/local/bin/gunlink    bin/unlink
+    run $sudo ln -sf /usr/local/bin/ginstall   bin/install
+    run $sudo ln -sf /usr/local/bin/grealpath  bin/realpath
+    run $sudo ln -sf /usr/local/bin/gsha256sum bin/sha256sum
 }
 
 __setup_freebsd() {
