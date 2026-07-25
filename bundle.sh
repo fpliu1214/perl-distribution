@@ -146,11 +146,9 @@ run ./build.sh install --prefix="$PREFIX"
 
 ######################################################
 
-run mv * "$PREFIX/"
+run mv README.md build.sh  bundle.sh config.pl config.txt elftool-print-interpreter.c elftool-print-needed.c perl.c sys-cdefs.h "$PREFIX/"
 
-run cd   "$PREFIX/"
-
-run rm LICENSE
+run cd "$PREFIX/"
 
 ######################################################
 
