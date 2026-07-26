@@ -204,9 +204,9 @@ jobs:
 
 
   macos:
-    if: false
     needs: check
-    if: needs.check.outputs.if-new-release == 'yes'
+    if: false
+      #if: needs.check.outputs.if-new-release == 'yes'
 
     runs-on: macos-26
 
