@@ -129,7 +129,7 @@ __setup_netbsd() {
 }
 
 __setup_macos() {
-    run brew install coreutils gnu-sed make
+    run brew install coreutils findutils grep gnu-sed make
 }
 
 __setup_linux() {
