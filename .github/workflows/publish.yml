@@ -205,8 +205,7 @@ jobs:
 
   macos:
     needs: check
-    if: false
-      #if: needs.check.outputs.if-new-release == 'yes'
+    if: needs.check.outputs.if-new-release == 'yes'
 
     runs-on: macos-26
 
@@ -302,7 +301,7 @@ jobs:
 
 
   publish:
-    needs: [check, dragonflybsd, midnightbsd, freebsd, openbsd, netbsd, linux-loongarch64, linux-other]
+    needs: [check, dragonflybsd, midnightbsd, freebsd, openbsd, netbsd, macos, linux-loongarch64, linux-other]
     if: needs.check.outputs.if-new-release == 'yes'
 
     runs-on: ubuntu-latest
