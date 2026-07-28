@@ -688,17 +688,13 @@ EOF
 
     #########################################################################################
 
-    cat > toolchain.txt <<EOF
-     CC='$CC'
-    CXX='$CXX'
-     AS='$AS'
-     LD='$LD'
-     AR='$AR'
- RANLIB='$RANLIB'
-SYSROOT='$SYSROOT'
-PROFILE='$PROFILE'
- CFLAGS='$CFLAGS'
-LDFLAGS='$LDFLAGS'
+    cat > toolchain.yml <<EOF
+cc: $CC
+ar: $AR
+sysroot: $SYSROOT
+profile: $PROFILE
+ccflags: $CFLAGS
+ldflags: $LDFLAGS
 EOF
 }
 

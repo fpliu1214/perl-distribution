@@ -178,7 +178,7 @@ run ./build.sh install --prefix="$PREFIX"
 
 ######################################################
 
-run mv README.md build.sh  bundle.sh config.pl config.txt elftool-print-interpreter.c elftool-print-needed.c perl.c sys-cdefs.h "$PREFIX/"
+run mv *.* "$PREFIX/"
 
 run cd "$PREFIX/"
 
@@ -188,7 +188,7 @@ if [ "$TARGET_PLATFORM_TYPE" != macos ] ; then
     gsed -i 's|-bundle -undefined dynamic_lookup|-shared|' config.pl
 fi
 
-CONFIG_HEAVY_FILEPATH="$(find "lib/$1" -mindepth 2 -maxdepth 2 -type f -name 'Config_heavy.pl')"
+CONFIG_HEAVY_FILEPATH="$(find "lib/$1" -mindepth 2 -maxdepth 2 -type f -name 'Config_heavy.pl' -print -quit)"
 CONFIG_DIR="${CONFIG_HEAVY_FILEPATH%/*}"
 CONFIG_PM_FILEPATH="$CONFIG_DIR/Config.pm"
 
@@ -207,14 +207,6 @@ fi
 
 ######################################################
 
-run mv *.c bin/
-
-run cd bin/
-
-run rm perl
-
-run mv "perl$1" perl.exe
-
 unset CC
 
 CC="$(command -v gcc || command -v clang || command -v cc)" || abort 1 'C Compiler not found.'
@@ -225,39 +217,33 @@ if [ "$TARGET_PLATFORM_TYPE" = macos ] ; then
     CC="$CC -Wl,-S"
 else
     CC="$CC -Wl,-s -static"
-
-    if [ "$TARGET_PLATFORM_TYPE" = linux ] ; then
-        run "$CC" -o elftool-print-needed      elftool-print-needed.c
-        run "$CC" -o elftool-print-interpreter elftool-print-interpreter.c
-
-        NEEDEDs="$(./elftool-print-needed perl.exe)"
-
-        DYNAMIC_LOADER_PATH="$(./elftool-print-interpreter perl.exe)"
-        DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
-
-        gsed -i "s|ld-linux-x86-64\.so\.2|$DYNAMIC_LOADER_NAME|" perl.c
-
-        ######################################################
-
-        run install -d runtime/
-        run cd         runtime/
-
-        for FILENAME in $NEEDEDs
-        do
-            FILEPATH="$(gcc -print-file-name="$FILENAME")"
-            run cp -L "$FILEPATH" .
-        done
-
-        [ -f    "$DYNAMIC_LOADER_NAME" ] || {
-            case $DYNAMIC_LOADER_NAME in
-                ld-musl-*.so.1)
-                    run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
-            esac
-        }
-
-        run cd ..
-    fi
 fi
+
+######################################################
+
+if [ "$TARGET_PLATFORM_TYPE" = linux ] ; then
+    run "$CC" -o elftool-print-needed      elftool-print-needed.c
+    run "$CC" -o elftool-print-interpreter elftool-print-interpreter.c
+
+    PERL="bin/perl$1"
+
+    NEEDEDs="$(./elftool-print-needed "$PERL")"
+
+    DYNAMIC_LOADER_PATH="$(./elftool-print-interpreter "$PERL")"
+    DYNAMIC_LOADER_NAME="${DYNAMIC_LOADER_PATH##*/}"
+
+    gsed -i "s|ld-linux-x86-64\.so\.2|$DYNAMIC_LOADER_NAME|" perl.c
+fi
+
+######################################################
+
+run mv perl.c bin/
+
+run cd bin/
+
+run rm perl
+
+run mv "perl$1" perl.exe
 
 run "$CC" perl.c -o perl
 run "$CC" perl.c -o perl-shim -DSCRIPT_MODE
@@ -280,6 +266,28 @@ do
         fi
     fi
 done
+
+######################################################
+
+if [ "$TARGET_PLATFORM_TYPE" = linux ] ; then
+    run install -d runtime/
+    run cd         runtime/
+
+    for FILENAME in $NEEDEDs
+    do
+        FILEPATH="$(gcc -print-file-name="$FILENAME")"
+        run cp -L "$FILEPATH" .
+    done
+
+    [ -f    "$DYNAMIC_LOADER_NAME" ] || {
+        case $DYNAMIC_LOADER_NAME in
+            ld-musl-*.so.1)
+                run ln -s "libc.musl${DYNAMIC_LOADER_NAME#ld-musl}" "$DYNAMIC_LOADER_NAME"
+        esac
+    }
+
+    run cd ..
+fi
 
 ######################################################
 

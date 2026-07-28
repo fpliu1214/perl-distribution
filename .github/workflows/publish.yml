@@ -263,20 +263,24 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - run: |
+      - id: arch
+        run: |
           case ${{ matrix.target-arch }} in
             x86_64)  X=amd64 ;;
             aarch64) X=arm64 ;;
             ppc64le) X=ppc64el ;;
             *)       X=${{ matrix.target-arch }}
           esac
-          curl -LO https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.4-base-$X.tar.gz
+          printf 'ARCH=%s\n' "$X" >> "$GITHUB_OUTPUT"
+
+      - run: curl -LO https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.4-base-${{ steps.arch.outputs.ARCH }}.tar.gz
 
       - run: install -d ubuntu-rootfs
-      - run: tar xf ubuntu-base-24.04.4-base-*.tar.gz -C ubuntu-rootfs
+      - run: tar xf ubuntu-base-*.tar.gz -C ubuntu-rootfs
+      - run: rm ubuntu-base-*.tar.gz
 
+      - run: cp *.* ubuntu-rootfs/
       - run: cp -p /etc/resolv.conf ubuntu-rootfs/etc/
-      - run: cp README.md build.sh  bundle.sh config.pl config.txt elftool-print-interpreter.c elftool-print-needed.c perl.c sys-cdefs.h ubuntu-rootfs/
 
       - run: sudo mount -o bind  /dev ubuntu-rootfs/dev
       - run: sudo mount -t proc  none ubuntu-rootfs/proc
