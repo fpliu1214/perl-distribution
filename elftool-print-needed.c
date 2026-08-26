@@ -10,6 +10,171 @@
 
 #include <elf.h>
 
+static int handle_elf32(unsigned char * elf) {
+    Elf32_Ehdr * ehdr = (Elf32_Ehdr*)elf;
+    Elf32_Phdr * phdr;
+
+    int has = 0;
+
+    for (Elf32_Half i = 0; i < ehdr->e_phnum; i++) {
+        phdr = (Elf32_Phdr*)(elf + ehdr->e_phoff + i * ehdr->e_phentsize);
+
+        if (phdr->p_type == PT_DYNAMIC) {
+            has = 1;
+            break;
+        }
+    }
+
+    if (has == 0) {
+        return 0;
+    }
+
+    //////////////////////////////////////////
+
+    Elf32_Addr addr = 0;
+    Elf32_Dyn * dyn;
+
+    for (size_t i = 0; i < 100; i++) {
+        dyn = (Elf32_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf32_Dyn));
+
+        if (dyn->d_tag == DT_NULL) {
+            break;
+        }
+
+        if (dyn->d_tag == DT_STRTAB) {
+            addr = dyn->d_un.d_ptr;
+            break;
+        }
+    }
+
+    if (addr == 0) {
+        return 1;
+    }
+
+    //////////////////////////////////////////
+
+    const char * dynstr = NULL;
+
+    Elf32_Phdr * phdr2;
+
+    for (Elf32_Half i = 0; i < ehdr->e_phnum; i++) {
+        phdr2 = (Elf32_Phdr*)(elf + ehdr->e_phoff + i * ehdr->e_phentsize);
+
+        if (phdr2->p_type == PT_LOAD) {
+            Elf32_Addr a = phdr2->p_vaddr;
+            Elf32_Addr b = phdr2->p_memsz + a;
+
+            if (addr >= a && addr < b) {
+                dynstr = (const char *)elf + phdr2->p_offset + (addr - a);
+                break;
+            }
+        }
+    }
+
+    if (dynstr == NULL) {
+        return 1;
+    }
+
+    //////////////////////////////////////////
+
+
+    for (size_t i = 0; i < 100; i++) {
+        dyn = (Elf32_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf32_Dyn));
+
+        if (dyn->d_tag == DT_NULL) {
+            break;
+        }
+
+        if (dyn->d_tag == DT_NEEDED) {
+            puts(dynstr + dyn->d_un.d_val);
+        }
+    }
+
+    return 0;
+}
+
+static int handle_elf64(unsigned char * elf) {
+    Elf64_Ehdr * ehdr = (Elf64_Ehdr*)elf;
+    Elf64_Phdr * phdr;
+
+    int has = 0;
+
+    for (Elf64_Half i = 0; i < ehdr->e_phnum; i++) {
+        phdr = (Elf64_Phdr*)(elf + ehdr->e_phoff + i * ehdr->e_phentsize);
+
+        if (phdr->p_type == PT_DYNAMIC) {
+            has = 1;
+            break;
+        }
+    }
+
+    if (has == 0) {
+        return 0;
+    }
+
+    //////////////////////////////////////////
+
+    Elf64_Addr addr = 0;
+    Elf64_Dyn * dyn;
+
+    for (size_t i = 0; i < 100; i++) {
+        dyn = (Elf64_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf64_Dyn));
+
+        if (dyn->d_tag == DT_NULL) {
+            break;
+        }
+
+        if (dyn->d_tag == DT_STRTAB) {
+            addr = dyn->d_un.d_ptr;
+            break;
+        }
+    }
+
+    if (addr == 0) {
+        return 1;
+    }
+
+    //////////////////////////////////////////
+
+    const char * dynstr = NULL;
+
+    Elf64_Phdr * phdr2;
+
+    for (Elf64_Half i = 0; i < ehdr->e_phnum; i++) {
+        phdr2 = (Elf64_Phdr*)(elf + ehdr->e_phoff + i * ehdr->e_phentsize);
+
+        if (phdr2->p_type == PT_LOAD) {
+            Elf64_Addr a = phdr2->p_vaddr;
+            Elf64_Addr b = phdr2->p_memsz + a;
+
+            if (addr >= a && addr < b) {
+                dynstr = (const char *)elf + phdr2->p_offset + (addr - a);
+                break;
+            }
+        }
+    }
+
+    if (dynstr == NULL) {
+        return 1;
+    }
+
+    //////////////////////////////////////////
+
+    for (size_t i = 0; i < 100; i++) {
+        dyn = (Elf64_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf64_Dyn));
+
+        if (dyn->d_tag == DT_NULL) {
+            break;
+        }
+
+        if (dyn->d_tag == DT_NEEDED) {
+            puts(dynstr + dyn->d_un.d_val);
+        }
+    }
+
+    return 0;
+}
+
 int main(int argc, const char *argv[]) {
     if (argc != 2) {
         printf("Usage: %s <ELF-FILEPATH>\n", argv[0]);
@@ -86,115 +251,17 @@ int main(int argc, const char *argv[]) {
 
     ///////////////////////////////////////////////////////////
 
+    int ret;
+
     switch (a[4]) {
-        case ELFCLASS64: {
-                Elf64_Ehdr * ehdr = (Elf64_Ehdr*)elf;
-                Elf64_Phdr * phdr;
-
-                int has = 0;
-
-                for (Elf64_Half i = 0; i < ehdr->e_phnum; i++) {
-                    phdr = (Elf64_Phdr*)(elf + ehdr->e_phoff + i * ehdr->e_phentsize);
-
-                    if (phdr->p_type == PT_DYNAMIC) {
-                        has = 1;
-                        break;
-                    }
-                }
-
-                if (has == 0) {
-                    return 0;
-                }
-
-                const char * dynstr = NULL;
-
-                Elf64_Dyn * dyn;
-
-                for (size_t i = 0; i < 100; i++) {
-                    dyn = (Elf64_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf64_Dyn));
-
-                    if (dyn->d_tag == DT_NULL) {
-                        break;
-                    }
-
-                    if (dyn->d_tag == DT_STRTAB) {
-                        dynstr = (const char *)elf + dyn->d_un.d_ptr;
-                        break;
-                    }
-                }
-
-                if (dynstr == NULL) {
-                    return 1;
-                }
-
-                for (size_t i = 0; i < 100; i++) {
-                    dyn = (Elf64_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf64_Dyn));
-
-                    if (dyn->d_tag == DT_NULL) {
-                        break;
-                    }
-
-                    if (dyn->d_tag == DT_NEEDED) {
-                        puts(dynstr + dyn->d_un.d_val);
-                    }
-                }
-            }
-            return 0;
-        case ELFCLASS32: {
-                Elf32_Ehdr * ehdr = (Elf32_Ehdr*)elf;
-                Elf32_Phdr * phdr;
-
-                int has = 0;
-
-                for (Elf32_Half i = 0; i < ehdr->e_phnum; i++) {
-                    phdr = (Elf32_Phdr*)(elf + ehdr->e_phoff + i * ehdr->e_phentsize);
-
-                    if (phdr->p_type == PT_DYNAMIC) {
-                        has = 1;
-                        break;
-                    }
-                }
-
-                if (has == 0) {
-                    return 0;
-                }
-
-                const char * dynstr = NULL;
-
-                Elf32_Dyn * dyn;
-
-                for (size_t i = 0; i < 100; i++) {
-                    dyn = (Elf32_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf32_Dyn));
-
-                    if (dyn->d_tag == DT_NULL) {
-                        break;
-                    }
-
-                    if (dyn->d_tag == DT_STRTAB) {
-                        dynstr = (const char *)elf + dyn->d_un.d_ptr;
-                        break;
-                    }
-                }
-
-                if (dynstr == NULL) {
-                    return 1;
-                }
-
-                for (size_t i = 0; i < 100; i++) {
-                    dyn = (Elf32_Dyn*)(elf + phdr->p_offset + i * sizeof(Elf32_Dyn));
-
-                    if (dyn->d_tag == DT_NULL) {
-                        break;
-                    }
-
-                    if (dyn->d_tag == DT_NEEDED) {
-                        puts(dynstr + dyn->d_un.d_val);
-                    }
-                }
-            }
-            return 0;
+        case ELFCLASS64: ret = handle_elf64(elf); break;
+        case ELFCLASS32: ret = handle_elf32(elf); break;
         default: 
             fprintf(stderr, "Invalid ELF file: %s\n", argv[1]);
-            return 101;
+            ret = 101;
     }
+
+    munmap(p, st.st_size);
+
+    return ret;
 }
