@@ -19,19 +19,7 @@ static int selfpath(char buf[], const char * argv0) {
 
     //////////////////////////////////
 
-    size_t slashIndex = 0U;
-
-    for (size_t i = 0U; ; i++) {
-        if (argv0[i] == '\0') {
-            break;
-        }
-
-        if (argv0[i] == '/') {
-            slashIndex = i;
-        }
-    }
-
-    if (slashIndex > 0) {
+    if (strrchr(argv0, '/') != NULL) {
         if (getcwd(buf, PATH_MAX) == NULL) {
             perror(NULL);
             return -1;
@@ -162,59 +150,38 @@ int main(int argc, char* argv[]) {
 
     ////////////////////////////////////////////////////
 
-    size_t slashIndex = 0U;
+    char * s = strrchr(selfExePath, '/');
 
-    for (size_t i = 0U; i < PATH_MAX; i++) {
-        if (selfExePath[i] == '\0') {
-            break;
-        }
-
-        if (selfExePath[i] == '/') {
-            slashIndex = i;
-        }
+    if (s == NULL) {
+        fprintf(stderr, "no / char in %s\n", selfExePath);
+        return 3;
     }
 
-    ////////////////////////////////////////////////////
-
-    selfExePath[slashIndex] = '\0';
-
-    const char * selfDirPath = selfExePath;
+    s[0] = '\0';
 
     ////////////////////////////////////////////////////
 
     char perlExeFilePath[PATH_MAX];
 
-    int ret = snprintf(perlExeFilePath, PATH_MAX, "%s/perl.exe", selfDirPath);
+    int ret = snprintf(perlExeFilePath, PATH_MAX, "%s/perl.exe", selfExePath);
 
     if (ret < 0) {
         perror(NULL);
-        return 3;
+        return 4;
     }
 
     ////////////////////////////////////////////////////
 
 #ifdef SCRIPT_MODE
-    size_t slashIndex2 = 0U;
-
-    for (size_t i = 0U; i < PATH_MAX; i++) {
-        if (pathBuf[i] == '\0') {
-            break;
-        }
-
-        if (pathBuf[i] == '/') {
-            slashIndex2 = i;
-        }
-    }
-
-    const char * cmdName = pathBuf + slashIndex2 + 1;
+    const char * cmdName = strrchr(pathBuf, '/');
 
     char perlScriptFilePath[PATH_MAX];
 
-    ret = snprintf(perlScriptFilePath, PATH_MAX, "%s/%s.pl", selfDirPath, cmdName);
+    ret = snprintf(perlScriptFilePath, PATH_MAX, "%s/%s.pl", selfExePath, cmdName);
 
     if (ret < 0) {
         perror(NULL);
-        return 4;
+        return 5;
     }
 #endif
 
@@ -222,11 +189,11 @@ int main(int argc, char* argv[]) {
 #ifdef __linux__
     char libraryPath[PATH_MAX];
 
-    ret = snprintf(libraryPath, PATH_MAX, "%s/runtime", selfDirPath);
+    ret = snprintf(libraryPath, PATH_MAX, "%s/runtime", selfExePath);
 
     if (ret < 0) {
         perror(NULL);
-        return 5;
+        return 6;
     }
 
     ////////////////////////////////////////////////////
@@ -237,12 +204,12 @@ int main(int argc, char* argv[]) {
 
     if (ret < 0) {
         perror(NULL);
-        return 6;
+        return 7;
     }
 
     ////////////////////////////////////////////////////
 
-    selfExePath[slashIndex] = '/';
+    s[0] = '/';
 
 #ifdef SCRIPT_MODE
     int n = 7;
@@ -263,8 +230,8 @@ int main(int argc, char* argv[]) {
     args[6] = perlScriptFilePath;
 #endif
 
-    for (int i = 1; i < argc; i++) {
-        args[n++] = argv[i];
+    for (int i = 1; i < argc; n++, i++) {
+        args[n] = argv[i];
     }
 
     args[n] = NULL;
