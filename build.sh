@@ -391,12 +391,6 @@ inspect_install_arguments() {
 
     #########################################################################################
 
-    AUX_INSTALL_DIR="$SESSION_DIR/auxroot"
-    AUX_INCLUDE_DIR="$AUX_INSTALL_DIR/include"
-    AUX_LIBRARY_DIR="$AUX_INSTALL_DIR/lib"
-
-    #########################################################################################
-
     NATIVE_PLATFORM_TYPE="$(uname -s | tr A-Z a-z)"
     NATIVE_PLATFORM_ARCH="$(uname -m)"
 
@@ -425,24 +419,19 @@ inspect_install_arguments() {
 
     #########################################################################################
 
-    if [ -z "$TAR" ] ; then
-        TAR="$(command -v bsdtar || command -v gtar || command -v tar)" || abort 1 "none of bsdtar, gtar, tar command was found."
-    fi
+    TAR="$(command -v bsdtar || command -v gtar || command -v tar)" || abort 1 "none of bsdtar, gtar, tar command was found."
 
-    if [ -z "$GMAKE" ] ; then
-        GMAKE="$(command -v gmake || command -v make)" || abort 1 "command not found: gmake"
-    fi
+    GMAKE="$(command -v gmake || command -v make)" || abort 1 "command not found: gmake"
 
     #########################################################################################
 
     unset CC_ARGS
     unset PP_ARGS
     unset LD_ARGS
+    unset SYSROOT
 
     if [ "$NATIVE_PLATFORM_TYPE" = darwin ] ; then
         [ -z "$CC"      ] &&      CC="$(xcrun --sdk macosx --find clang)"
-        [ -z "$CXX"     ] &&     CXX="$(xcrun --sdk macosx --find clang++)"
-        [ -z "$AS"      ] &&      AS="$(xcrun --sdk macosx --find as)"
         [ -z "$LD"      ] &&      LD="$(xcrun --sdk macosx --find ld)"
         [ -z "$AR"      ] &&      AR="$(xcrun --sdk macosx --find ar)"
         [ -z "$RANLIB"  ] &&  RANLIB="$(xcrun --sdk macosx --find ranlib)"
@@ -466,14 +455,6 @@ EOF
     else
         [ -z "$CC" ] && {
              CC="$(command -v cc  || command -v clang   || command -v gcc)" || abort 1 "C Compiler not found."
-        }
-
-        [ -z "$CXX" ] && {
-            CXX="$(command -v c++ || command -v clang++ || command -v g++)" || abort 1 "C++ Compiler not found."
-        }
-
-        [ -z "$AS" ] && {
-            AS="$(command -v as)" || abort 1 "command not found: as"
         }
 
         [ -z "$LD" ] && {
@@ -529,13 +510,12 @@ EOF
     #########################################################################################
 
       CFLAGS="$CC_ARGS   $CFLAGS"
-    CXXFLAGS="$CC_ARGS $CXXFLAGS"
     CPPFLAGS="$PP_ARGS $CPPFLAGS"
      LDFLAGS="$LD_ARGS  $LDFLAGS"
 
     #########################################################################################
 
-    for TOOL in CC CXX CPP AS AR RANLIB LD SYSROOT CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
+    for TOOL in CC CPP AR RANLIB LD CFLAGS CPPFLAGS LDFLAGS
     do
         export "${TOOL}"
     done
@@ -572,12 +552,6 @@ EOF
     unset PERL5LIB
 }
 
-configure() {
-    run ./configure "--prefix=$PACKAGE_INSTALL_DIR" "$@"
-    run "$GMAKE" "--jobs=$BUILD_NJOBS"
-    run "$GMAKE" install
-}
-
 install_the_given_package() {
     [ -z "$1" ] && abort 1 "install_the_given_package <PACKAGE-NAME> , <PACKAGE-NAME> is unspecified."
 
@@ -601,12 +575,6 @@ install_the_given_package() {
     #########################################################################################
 
     printf '\n%b\n' "${COLOR_PURPLE}=>> $ARG0: install package : $1${COLOR_OFF}"
-
-    #########################################################################################
-
-    if [ "$1" != perl ] ; then
-        PACKAGE_INSTALL_DIR="$AUX_INSTALL_DIR"
-    fi
 
     #########################################################################################
 
@@ -691,7 +659,7 @@ EOF
     cat > toolchain.yml <<EOF
 cc: $CC
 ar: $AR
-sysroot: $SYSROOT
+ranlib: $RANLIB
 profile: $PROFILE
 ccflags: $CFLAGS
 ldflags: $LDFLAGS
@@ -735,7 +703,7 @@ ${COLOR_GREEN}$ARG0 info${COLOR_OFF}
 ${COLOR_GREEN}$ARG0 install [OPTIONS]${COLOR_OFF}
     install the perl package.
 
-    Influential environment variables: TAR, GMAKE, CC, CXX, AS, LD, AR, RANLIB, CFLAGS, CXXFLAGS, CPPFLAGS, LDFLAGS
+    Influential environment variables: CC, AR, RANLIB, CFLAGS, CPPFLAGS, LDFLAGS
 
     OPTIONS:
         ${COLOR_BLUE}--prefix=<DIR>${COLOR_OFF}
@@ -752,11 +720,9 @@ ${COLOR_GREEN}$ARG0 install [OPTIONS]${COLOR_OFF}
 
             debug:
                   CFLAGS: -O0 -g
-                CXXFLAGS: -O0 -g
 
             release:
                   CFLAGS: -Os
-                CXXFLAGS: -Os
                 CPPFLAGS: -DNDEBUG
                  LDFLAGS: -flto -Wl,-s
 
